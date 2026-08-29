@@ -205,6 +205,6 @@ export function activePreset(mix: MixSettings): MixPresetId | null {
 
 export function mixChipLabel(mix: MixSettings): string {
   const preset = activePreset(mix);
-  const tempo = mix.tempo === "lock" ? `lock ${Math.round(mix.bpm)}` : "follow";
+  const tempo = mix.tempo === "lock" ? `${Math.round(mix.bpm)}` : "follow";
   return preset ? `${preset} · ${tempo}` : tempo;
 }

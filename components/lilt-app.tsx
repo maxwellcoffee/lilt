@@ -238,6 +238,7 @@ export function LiltApp() {
           permissions={permissions}
           tempo={mix.tempo}
           lockBpm={mix.bpm}
+          onHearSample={(index) => engineRef.current?.previewGrain(index)}
         />
       )}
 
@@ -359,11 +360,13 @@ function PlayingHud({
   permissions,
   tempo,
   lockBpm,
+  onHearSample,
 }: {
   snapshot: EngineSnapshot | null;
   permissions: SensorPermissions;
   tempo: MixSettings["tempo"];
   lockBpm: number;
+  onHearSample: (index: number) => void;
 }) {
   const missing: string[] = [];
   if (!permissions.microphone) missing.push("mic");
@@ -385,20 +388,26 @@ function PlayingHud({
           </span>
         </p>
         <p className="mt-2 flex justify-end gap-1.5" aria-label="Captured samples">
-          {Array.from({ length: 5 }, (_, index) => (
-            <span
-              key={index}
-              className="block size-1.5 rounded-full"
-              style={{
-                background:
-                  index < (snapshot?.voice.sampleCount ?? 0)
+          {Array.from({ length: 5 }, (_, index) => {
+            const filled = index < (snapshot?.voice.sampleCount ?? 0);
+            return (
+              <button
+                key={index}
+                type="button"
+                disabled={!filled}
+                onClick={() => onHearSample(index)}
+                className="pointer-events-auto block size-3 rounded-full disabled:pointer-events-none"
+                style={{
+                  background: filled
                     ? snapshot?.captureFlash && snapshot.captureFlash > 0.4
                       ? "#7ec8c4"
                       : "rgba(126, 200, 196, 0.7)"
                     : "rgba(244, 239, 230, 0.18)",
-              }}
-            />
-          ))}
+                }}
+                aria-label={filled ? `Play sample ${index + 1}` : `Empty sample ${index + 1}`}
+              />
+            );
+          })}
         </p>
         {!permissions.camera ? (
           <p className="mt-2 max-w-[12rem] text-[10px] leading-4 text-[#f4efe6]/35">

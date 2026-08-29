@@ -157,6 +157,15 @@ export class LiltEngine {
     this.sampler?.clear();
   }
 
+  previewGrain(index: number): void {
+    const grains = this.sampler?.grains;
+    const ctx = this.ctx;
+    if (!grains || !ctx) return;
+    const grain = grains[index];
+    if (!grain) return;
+    this.playGrain(ctx.currentTime + 0.02, grain, 0.88);
+  }
+
   setStepListener(listener: ((intensity: number) => void) | null): void {
     this.onHeardStep = listener;
   }
