@@ -9,6 +9,7 @@ import { HeadCamera } from "@/lib/head-camera";
 import {
   getLiveMix,
   getServerMix,
+  peekUndoMix,
   subscribeMix,
   writeMix,
   type MixSettings,
@@ -77,6 +78,11 @@ export function LiltApp() {
         setMixOpen((open) => !open);
         return;
       }
+      if ((event.key === "z" || event.key === "Z") && !event.metaKey && !event.ctrlKey) {
+        const previous = peekUndoMix();
+        if (previous) applyMix(previous);
+        return;
+      }
       if (event.code === "Space" && phase === "playing") {
         event.preventDefault();
         motionRef.current?.registerStep(0.75);
@@ -88,7 +94,7 @@ export function LiltApp() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase]);
+  }, [applyMix, phase]);
 
   const begin = useCallback(async () => {
     setPhase("starting");
@@ -189,9 +195,10 @@ export function LiltApp() {
         engine.setMotion(motionSnap);
         const next = engine.snapshot();
         snapshotRef.current = next;
-        if (next.kickFlash > 0.88 && now - lastVibrate > 220) {
+        const haptic = getLiveMix().haptic;
+        if (next.kickFlash > 0.88 && haptic > 0.03 && now - lastVibrate > 220) {
           lastVibrate = now;
-          navigator.vibrate?.(14);
+          navigator.vibrate?.(Math.round(5 + haptic * 22));
         }
         if (now - lastHud > 50) {
           lastHud = now;
@@ -252,6 +259,11 @@ export function LiltApp() {
         onOpenChange={setMixOpen}
         onChange={applyMix}
         samples={snapshot?.voice.sampleCount ?? 0}
+        hear={
+          snapshot
+            ? { rms: snapshot.voice.rms, voiced: snapshot.voice.voiced }
+            : null
+        }
         onClear={
           phase === "playing"
             ? () => {
@@ -355,7 +367,7 @@ function StartGate({
               a phone in a jacket. On iPhone, Add to Home Screen.
             </p>
             <p className="hidden text-xs leading-5 text-[#f4efe6]/32 sm:block">
-              M opens Mix. Space is a step. Keys 1 to 5 play grains.
+              M opens Mix. Space is a step. Keys 1 to 5 play grains. Z undoes Mix.
             </p>
           </>
         )}

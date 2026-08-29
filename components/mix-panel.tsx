@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   MIX_DEFAULTS,
   MIX_KEYS,
   MIX_PRESETS,
   activePreset,
   mixChipLabel,
+  peekUndoMix,
   type MixKeyId,
   type MixPresetId,
   type MixSettings,
@@ -19,6 +22,7 @@ type MixPanelProps = {
   onEnd?: () => void;
   onClear?: () => void;
   samples?: number;
+  hear?: { rms: number; voiced: boolean } | null;
 };
 
 type SliderKey = keyof Pick<
@@ -35,6 +39,9 @@ type SliderKey = keyof Pick<
   | "chop"
   | "bed"
   | "space"
+  | "hush"
+  | "thump"
+  | "haptic"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
@@ -44,18 +51,21 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   density: { label: "Busy", max: 1 },
   echo: { label: "Echo", max: 1 },
   space: { label: "Space", max: 1 },
+  hush: { label: "Hush", max: 1 },
   brightness: { label: "Brightness", max: 1 },
   swing: { label: "Swing", max: 0.4 },
   voice: { label: "Voice", max: 1 },
   chop: { label: "Chop", max: 1 },
   sensitivity: { label: "Catch hums", max: 1 },
+  thump: { label: "Thump", max: 1 },
   steer: { label: "Steer", max: 1 },
+  haptic: { label: "Pulse", max: 1 },
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
-  { label: "Sound", keys: ["volume", "bed", "drums", "density", "echo", "space", "brightness", "swing"] },
-  { label: "Voice", keys: ["voice", "chop", "sensitivity"] },
-  { label: "Move", keys: ["steer"] },
+  { label: "Sound", keys: ["volume", "drums", "hush", "echo", "space", "bed", "density", "brightness", "swing"] },
+  { label: "Voice", keys: ["voice", "chop", "sensitivity", "thump"] },
+  { label: "Move", keys: ["steer", "haptic"] },
 ];
 
 export function MixPanel({
@@ -66,8 +76,14 @@ export function MixPanel({
   onEnd,
   onClear,
   samples = 0,
+  hear = null,
 }: MixPanelProps) {
   const current = activePreset(mix);
+  const undo = peekUndoMix();
+  const [folded, setFolded] = useState<Record<string, boolean>>({
+    Voice: true,
+    Move: true,
+  });
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -105,43 +121,81 @@ export function MixPanel({
               >
                 Reset
               </button>
+              {undo ? (
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...undo })}
+                  className="min-h-9 rounded-full border border-[#f4efe6]/20 px-3.5 py-1.5 font-mono text-[11px] tracking-[0.16em] text-[#f4efe6]/60 uppercase"
+                >
+                  Undo
+                </button>
+              ) : null}
             </div>
 
             <div className="space-y-5">
-              {GROUPS.map((group) => (
-                <div key={group.label}>
-                  <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
-                    {group.label}
-                  </h3>
-                  <div className="space-y-3">
-                    {group.keys.map((key) => {
-                      const slider = SLIDERS[key];
-                      return (
-                        <label key={key} className="block">
-                          <span className="mb-1 flex justify-between font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
-                            <span>{slider.label}</span>
-                            <span>{Math.round((mix[key] / slider.max) * 100)}</span>
-                          </span>
-                          <input
-                            type="range"
-                            min={0}
-                            max={slider.max}
-                            step={slider.max > 1 ? 1 : 0.01}
-                            value={mix[key]}
-                            onChange={(event) =>
-                              onChange({
-                                ...mix,
-                                [key]: Number(event.target.value),
-                              })
-                            }
-                            className="h-8 w-full cursor-pointer accent-[#e8a87c]"
-                          />
-                        </label>
-                      );
-                    })}
+              {GROUPS.map((group) => {
+                const hidden = Boolean(folded[group.label]);
+                return (
+                  <div key={group.label}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFolded((currentFold) => ({
+                          ...currentFold,
+                          [group.label]: !hidden,
+                        }))
+                      }
+                      className="mb-2 flex w-full items-center justify-between font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase"
+                      aria-expanded={!hidden}
+                    >
+                      <span>{group.label}</span>
+                      <span>{hidden ? "show" : "hide"}</span>
+                    </button>
+                    {hidden ? null : (
+                      <div className="space-y-3">
+                        {group.keys.map((key) => {
+                          const slider = SLIDERS[key];
+                          return (
+                            <label key={key} className="block">
+                              <span className="mb-1 flex justify-between font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                                <span>{slider.label}</span>
+                                <span>{Math.round((mix[key] / slider.max) * 100)}</span>
+                              </span>
+                              <input
+                                type="range"
+                                min={0}
+                                max={slider.max}
+                                step={slider.max > 1 ? 1 : 0.01}
+                                value={mix[key]}
+                                onChange={(event) =>
+                                  onChange({
+                                    ...mix,
+                                    [key]: Number(event.target.value),
+                                  })
+                                }
+                                className="h-8 w-full cursor-pointer accent-[#e8a87c]"
+                              />
+                              {hear && (key === "sensitivity" || key === "thump") ? (
+                                <span
+                                  className="mt-1 block h-1 overflow-hidden rounded-full bg-[#f4efe6]/10"
+                                  aria-hidden="true"
+                                >
+                                  <span
+                                    className={`block h-full ${hear.voiced ? "bg-[#7ec8c4]" : "bg-[#f4efe6]/35"}`}
+                                    style={{
+                                      width: `${Math.round(Math.min(1, hear.rms * (hear.voiced ? 14 : 9)) * 100)}%`,
+                                    }}
+                                  />
+                                </span>
+                              ) : null}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-5">
