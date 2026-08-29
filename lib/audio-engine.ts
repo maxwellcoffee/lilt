@@ -95,7 +95,7 @@ export class LiltEngine {
     this.filter = ctx.createBiquadFilter();
     this.filter.type = "lowpass";
     this.filter.frequency.value = 2400;
-    this.filter.Q.value = 0.7;
+    this.filter.Q.value = this.biteQ();
 
     this.delay = ctx.createDelay(1.2);
     this.delay.delayTime.value = 0.35;
@@ -163,6 +163,9 @@ export class LiltEngine {
     }
     if (ctx && this.convolver && mix.hall !== this.lastHall) {
       this.writeImpulse(ctx);
+    }
+    if (ctx && this.filter) {
+      this.filter.Q.setTargetAtTime(this.biteQ(), ctx.currentTime, 0.08);
     }
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
@@ -470,7 +473,7 @@ export class LiltEngine {
     const filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.value = 900;
-    filter.Q.value = 0.7;
+    filter.Q.value = lerp(0.4, 2.4, clamp(this.mix.bite, 0, 1));
     source.connect(filter);
     filter.connect(gain);
     gain.connect(this.filter);
@@ -576,6 +579,7 @@ export class LiltEngine {
       (motion.head.yaw + 1) * reach * steer +
       motion.accelEnergy * 300;
     this.filter.frequency.setTargetAtTime(clamp(cutoff, 280, 6200), now, 0.08);
+    this.filter.Q.setTargetAtTime(this.biteQ(), now, 0.08);
     const delayTime = clamp(
       (60 / this.bpm) * (0.55 + motion.head.roll * 0.2 * steer),
       0.12,
@@ -785,6 +789,10 @@ export class LiltEngine {
     pan.connect(this.filter);
     source.start(time);
     source.stop(time + grain.duration + 0.05);
+  }
+
+  private biteQ(): number {
+    return lerp(0.25, 4.2, clamp(this.mix.bite, 0, 1));
   }
 
   private grainRate(grain: CapturedGrain): number {
