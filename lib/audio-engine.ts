@@ -760,7 +760,7 @@ export class LiltEngine {
     if (!grains || grains.length === 0) return;
     const oneshots = grains.filter((grain) => !grain.looping);
     const pool = oneshots.length > 0 ? oneshots : grains;
-    const grain = pool[beat % pool.length];
+    const grain = pool[this.scatterIndex(pool.length, beat)];
     if (!grain) return;
     this.playGrain(time, grain, 0.55);
   }
@@ -789,6 +789,16 @@ export class LiltEngine {
     pan.connect(this.filter);
     source.start(time);
     source.stop(time + grain.duration + 0.05);
+  }
+
+  private scatterIndex(poolLen: number, beat: number): number {
+    const latest = poolLen - 1;
+    const scatter = clamp(this.mix.scatter, 0, 1);
+    const span = Math.max(1, Math.round(lerp(1, poolLen, scatter)));
+    const start = latest - span + 1;
+    const salt = Math.imul(beat + 1, 2654435761) >>> 0;
+    const pick = scatter > 0.5 ? salt % span : beat % span;
+    return start + pick;
   }
 
   private biteQ(): number {
