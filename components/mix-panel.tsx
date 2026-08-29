@@ -19,33 +19,37 @@ type MixPanelProps = {
   samples?: number;
 };
 
-const SLIDERS: Array<{
-  key: keyof Pick<
-    MixSettings,
-    | "volume"
-    | "voice"
-    | "sensitivity"
-    | "echo"
-    | "brightness"
-    | "swing"
-    | "drums"
-    | "density"
-    | "steer"
-    | "chop"
-  >;
-  label: string;
-  max: number;
-}> = [
-  { key: "volume", label: "Volume", max: 1 },
-  { key: "voice", label: "Voice", max: 1 },
-  { key: "drums", label: "Drums", max: 1 },
-  { key: "density", label: "Busy", max: 1 },
-  { key: "steer", label: "Steer", max: 1 },
-  { key: "chop", label: "Chop", max: 1 },
-  { key: "sensitivity", label: "Catch hums", max: 1 },
-  { key: "echo", label: "Echo", max: 1 },
-  { key: "brightness", label: "Brightness", max: 1 },
-  { key: "swing", label: "Swing", max: 0.4 },
+type SliderKey = keyof Pick<
+  MixSettings,
+  | "volume"
+  | "voice"
+  | "sensitivity"
+  | "echo"
+  | "brightness"
+  | "swing"
+  | "drums"
+  | "density"
+  | "steer"
+  | "chop"
+>;
+
+const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
+  volume: { label: "Volume", max: 1 },
+  drums: { label: "Drums", max: 1 },
+  density: { label: "Busy", max: 1 },
+  echo: { label: "Echo", max: 1 },
+  brightness: { label: "Brightness", max: 1 },
+  swing: { label: "Swing", max: 0.4 },
+  voice: { label: "Voice", max: 1 },
+  chop: { label: "Chop", max: 1 },
+  sensitivity: { label: "Catch hums", max: 1 },
+  steer: { label: "Steer", max: 1 },
+};
+
+const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
+  { label: "Sound", keys: ["volume", "drums", "density", "echo", "brightness", "swing"] },
+  { label: "Voice", keys: ["voice", "chop", "sensitivity"] },
+  { label: "Move", keys: ["steer"] },
 ];
 
 export function MixPanel({
@@ -97,28 +101,40 @@ export function MixPanel({
               </button>
             </div>
 
-            <div className="space-y-3">
-              {SLIDERS.map((slider) => (
-                <label key={slider.key} className="block">
-                  <span className="mb-1 flex justify-between font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
-                    <span>{slider.label}</span>
-                    <span>{Math.round((mix[slider.key] / slider.max) * 100)}</span>
-                  </span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={slider.max}
-                    step={slider.max > 1 ? 1 : 0.01}
-                    value={mix[slider.key]}
-                    onChange={(event) =>
-                      onChange({
-                        ...mix,
-                        [slider.key]: Number(event.target.value),
-                      })
-                    }
-                    className="h-8 w-full cursor-pointer accent-[#e8a87c]"
-                  />
-                </label>
+            <div className="space-y-5">
+              {GROUPS.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
+                    {group.label}
+                  </p>
+                  <div className="space-y-3">
+                    {group.keys.map((key) => {
+                      const slider = SLIDERS[key];
+                      return (
+                        <label key={key} className="block">
+                          <span className="mb-1 flex justify-between font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                            <span>{slider.label}</span>
+                            <span>{Math.round((mix[key] / slider.max) * 100)}</span>
+                          </span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={slider.max}
+                            step={slider.max > 1 ? 1 : 0.01}
+                            value={mix[key]}
+                            onChange={(event) =>
+                              onChange({
+                                ...mix,
+                                [key]: Number(event.target.value),
+                              })
+                            }
+                            className="h-8 w-full cursor-pointer accent-[#e8a87c]"
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
 
