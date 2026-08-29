@@ -53,6 +53,7 @@ type SliderKey = keyof Pick<
   | "punch"
   | "skin"
   | "snare"
+  | "hats"
   | "width"
   | "bounce"
   | "hang"
@@ -85,6 +86,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   punch: { label: "Punch", max: 1 },
   skin: { label: "Skin", max: 1 },
   snare: { label: "Snare", max: 1 },
+  hats: { label: "Hats", max: 1 },
   width: { label: "Width", max: 1 },
   bounce: { label: "Bounce", max: 1 },
   hang: { label: "Hang", max: 1 },
@@ -92,7 +94,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
-  { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "punch", "skin", "snare", "density"] },
+  { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "punch", "skin", "snare", "hats", "density"] },
   { label: "Color", keys: ["echo", "space", "hall", "brightness", "reach", "bite", "swing", "width"] },
   { label: "Voice", keys: ["voice", "chop", "hold", "snap", "scatter", "sensitivity", "thump"] },
   { label: "Move", keys: ["steer", "bounce", "hang", "gap", "haptic"] },
