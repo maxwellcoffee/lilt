@@ -584,10 +584,11 @@ export class LiltEngine {
       motion.accelEnergy * 300;
     this.filter.frequency.setTargetAtTime(clamp(cutoff, 280, 6200), now, 0.08);
     this.filter.Q.setTargetAtTime(this.biteQ(), now, 0.08);
+    const beats = lerp(0.22, 0.92, clamp(this.mix.late, 0, 1));
     const delayTime = clamp(
-      (60 / this.bpm) * (0.55 + motion.head.roll * 0.2 * steer),
-      0.12,
-      0.75,
+      (60 / this.bpm) * (beats + motion.head.roll * 0.2 * steer),
+      0.08,
+      0.85,
     );
     this.delay.delayTime.setTargetAtTime(delayTime, now, 0.12);
     this.delayGain.gain.setTargetAtTime(
