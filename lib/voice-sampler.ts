@@ -27,7 +27,6 @@ export class VoiceSampler {
   private footstep = false;
   private sensitivity = 0.55;
   private chop = 0.42;
-  private hold = 0.42;
   private thump = 0.5;
   readonly grains: CapturedGrain[] = [];
   private readonly maxGrains = 5;
@@ -58,10 +57,6 @@ export class VoiceSampler {
 
   setChop(value: number): void {
     this.chop = Math.min(1, Math.max(0, value));
-  }
-
-  setHold(value: number): void {
-    this.hold = Math.min(1, Math.max(0, value));
   }
 
   setThump(value: number): void {
@@ -172,7 +167,7 @@ export class VoiceSampler {
       duration,
       rms: rms(data),
       f0: estimateF0(data, this.sampleRate),
-      looping: duration > lerp(0.92, 0.2, this.hold),
+      looping: duration > lerp(0.72, 0.28, this.chop),
       createdAt: now,
     };
 

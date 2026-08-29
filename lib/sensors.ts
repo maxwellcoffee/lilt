@@ -1,4 +1,4 @@
-import { clamp, median } from "@/lib/math";
+import { clamp, lerp, median } from "@/lib/math";
 import type { HeadPose, MotionSnapshot } from "@/lib/types";
 
 type MotionPermissionEvent = {
@@ -33,6 +33,7 @@ export class MotionRig {
   private lastPointerAt = 0;
   private lastFused: HeadPose = { ...IDLE_HEAD };
   private lastFusedAt = 0;
+  private bounce = 0.45;
   private origin: { alpha: number; beta: number; gamma: number } | null = null;
   private listening = false;
   private onMotion = (event: DeviceMotionEvent) => this.handleMotion(event);
@@ -69,6 +70,10 @@ export class MotionRig {
     this.listening = false;
     window.removeEventListener("devicemotion", this.onMotion);
     window.removeEventListener("deviceorientation", this.onOrientation);
+  }
+
+  setBounce(value: number): void {
+    this.bounce = clamp(value, 0, 1);
   }
 
   registerStep(intensity: number): void {
@@ -175,8 +180,9 @@ export class MotionRig {
     const dynamic = mag - this.gravity;
     this.accelEnergy = this.accelEnergy * 0.85 + Math.abs(dynamic) * 0.15;
     const now = performance.now() / 1000;
-    const threshold = 0.38;
-    if (dynamic > threshold && now - this.lastStepAt > 0.28) {
+    const threshold = lerp(0.72, 0.16, this.bounce);
+    const gap = lerp(0.42, 0.22, this.bounce);
+    if (dynamic > threshold && now - this.lastStepAt > gap) {
       if (this.lastStepAt > 0) {
         const interval = now - this.lastStepAt;
         if (interval < 1.4) {
