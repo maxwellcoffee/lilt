@@ -60,10 +60,12 @@ export function LiltApp() {
   const applyMix = useCallback((next: MixSettings) => {
     writeMix(next);
     engineRef.current?.setMix(next);
+    motionRef.current?.setBounce(next.bounce);
   }, []);
 
   useEffect(() => {
     engineRef.current?.setMix(mix);
+    motionRef.current?.setBounce(mix.bounce);
   }, [mix]);
 
   useEffect(() => {
@@ -81,6 +83,12 @@ export function LiltApp() {
       if ((event.key === "z" || event.key === "Z") && !event.metaKey && !event.ctrlKey) {
         const previous = peekUndoMix();
         if (previous) applyMix(previous);
+        return;
+      }
+      if ((event.key === "[" || event.key === "]") && getLiveMix().tempo === "lock") {
+        const live = getLiveMix();
+        const delta = event.key === "]" ? 2 : -2;
+        applyMix({ ...live, bpm: Math.min(150, Math.max(70, Math.round(live.bpm) + delta)) });
         return;
       }
       if (event.code === "Space" && phase === "playing") {
@@ -123,6 +131,7 @@ export function LiltApp() {
     }
     engineRef.current = engine;
     engine.setMix(getLiveMix());
+    motion.setBounce(getLiveMix().bounce);
     engine.setStepListener((intensity) => motion.registerStep(intensity));
 
     if (cam) {
@@ -261,7 +270,11 @@ export function LiltApp() {
         samples={snapshot?.voice.sampleCount ?? 0}
         hear={
           snapshot
-            ? { rms: snapshot.voice.rms, voiced: snapshot.voice.voiced }
+            ? {
+                rms: snapshot.voice.rms,
+                voiced: snapshot.voice.voiced,
+                walking: snapshot.walking,
+              }
             : null
         }
         onClear={
@@ -368,6 +381,7 @@ function StartGate({
             </p>
             <p className="hidden text-xs leading-5 text-[#f4efe6]/32 sm:block">
               M opens Mix. Space is a step. Keys 1 to 5 play grains. Z undoes Mix.
+              [ and ] nudge a locked BPM.
             </p>
           </>
         )}
@@ -410,7 +424,14 @@ function PlayingHud({
           >
             {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "–"}
           </span>
-          <span className="mt-0.5 block text-[10px] tracking-[0.14em] text-[#f4efe6]/35 uppercase">
+          <span
+            className="mt-0.5 block text-[10px] tracking-[0.14em] uppercase"
+            style={{
+              color: snapshot?.keyTint
+                ? `rgba(${snapshot.keyTint.r}, ${snapshot.keyTint.g}, ${snapshot.keyTint.b}, 0.7)`
+                : "rgba(244, 239, 230, 0.35)",
+            }}
+          >
             {tempo === "lock" ? `locked ${Math.round(lockBpm)}` : "follows you"}
             {snapshot?.keyLabel ? ` · ${snapshot.keyLabel}` : ""}
           </span>
