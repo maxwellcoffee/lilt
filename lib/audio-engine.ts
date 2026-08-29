@@ -120,6 +120,7 @@ export class LiltEngine {
     this.sampler = new VoiceSampler(ctx.sampleRate);
     this.sampler.setSensitivity(this.mix.sensitivity);
     this.sampler.setChop(this.mix.chop);
+    this.sampler.setThump(this.mix.thump);
     if (mic) {
       await this.connectMic(ctx, mic);
     }
@@ -145,6 +146,7 @@ export class LiltEngine {
     }
     this.sampler?.setSensitivity(mix.sensitivity);
     this.sampler?.setChop(mix.chop);
+    this.sampler?.setThump(mix.thump);
     if (ctx && this.bassGain) {
       this.bassGain.gain.setTargetAtTime(0.06 + mix.bed * 0.22, ctx.currentTime, 0.06);
     }
@@ -698,7 +700,9 @@ export class LiltEngine {
   }
 
   private drumLevel(gain: number): number {
-    return gain * clamp(this.mix.drums, 0, 1);
+    const walking = this.motion?.walking ?? false;
+    const hush = walking ? 1 : lerp(1, 0.12, clamp(this.mix.hush, 0, 1));
+    return gain * clamp(this.mix.drums, 0, 1) * hush;
   }
 
   private hitClick(time: number, gain: number, downbeat: boolean): void {
