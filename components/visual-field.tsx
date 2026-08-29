@@ -89,7 +89,8 @@ export function VisualField({ snapshotRef, video, hasCamera }: VisualFieldProps)
 
       drawStars(ctx, width, height, starsRef.current ?? [], yaw, pitch, kick);
 
-      const glow = `rgba(232, 168, 124, ${0.06 + kick * 0.16 + voice * 2.4 + capture * 0.2})`;
+      const tint = state?.keyTint ?? { r: 232, g: 168, b: 124 };
+      const glow = `rgba(${tint.r}, ${tint.g}, ${tint.b}, ${0.06 + kick * 0.16 + voice * 2.4 + capture * 0.2})`;
       const gradient = ctx.createRadialGradient(
         width * 0.5 + yaw * 40,
         height * 0.38,

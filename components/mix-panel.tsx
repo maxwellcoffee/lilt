@@ -8,6 +8,7 @@ import {
   MIX_PRESETS,
   activePreset,
   mixChipLabel,
+  mixKeyTint,
   peekUndoMix,
   type MixKeyId,
   type MixPresetId,
@@ -22,7 +23,7 @@ type MixPanelProps = {
   onEnd?: () => void;
   onClear?: () => void;
   samples?: number;
-  hear?: { rms: number; voiced: boolean } | null;
+  hear?: { rms: number; voiced: boolean; walking: boolean } | null;
 };
 
 type SliderKey = keyof Pick<
@@ -42,6 +43,9 @@ type SliderKey = keyof Pick<
   | "hush"
   | "thump"
   | "haptic"
+  | "drive"
+  | "width"
+  | "bounce"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
@@ -60,12 +64,16 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   thump: { label: "Thump", max: 1 },
   steer: { label: "Steer", max: 1 },
   haptic: { label: "Pulse", max: 1 },
+  drive: { label: "Drive", max: 1 },
+  width: { label: "Width", max: 1 },
+  bounce: { label: "Bounce", max: 1 },
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
-  { label: "Sound", keys: ["volume", "drums", "hush", "echo", "space", "bed", "density", "brightness", "swing"] },
+  { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "density"] },
+  { label: "Color", keys: ["echo", "space", "brightness", "swing", "width"] },
   { label: "Voice", keys: ["voice", "chop", "sensitivity", "thump"] },
-  { label: "Move", keys: ["steer", "haptic"] },
+  { label: "Move", keys: ["steer", "bounce", "haptic"] },
 ];
 
 export function MixPanel({
@@ -158,7 +166,14 @@ export function MixPanel({
                           return (
                             <label key={key} className="block">
                               <span className="mb-1 flex justify-between font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
-                                <span>{slider.label}</span>
+                                <span>
+                                  {slider.label}
+                                  {hear && key === "hush"
+                                    ? hear.walking
+                                      ? " · walking"
+                                      : " · still"
+                                    : ""}
+                                </span>
                                 <span>{Math.round((mix[key] / slider.max) * 100)}</span>
                               </span>
                               <input
@@ -203,20 +218,27 @@ export function MixPanel({
                 Key
               </h3>
               <div className="flex flex-wrap gap-2">
-                {(Object.keys(MIX_KEYS) as MixKeyId[]).map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => onChange({ ...mix, key: id })}
-                    className={`min-h-9 rounded-full border px-3.5 py-1.5 font-mono text-[11px] tracking-[0.14em] uppercase ${
-                      mix.key === id
-                        ? "border-[#7ec8c4] bg-[#7ec8c4] text-[#0b0907]"
-                        : "border-[#7ec8c4]/35 text-[#7ec8c4]"
-                    }`}
-                  >
-                    {MIX_KEYS[id].label}
-                  </button>
-                ))}
+                {(Object.keys(MIX_KEYS) as MixKeyId[]).map((id) => {
+                  const tint = mixKeyTint(id);
+                  const on = mix.key === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => onChange({ ...mix, key: id })}
+                      className="min-h-9 rounded-full border px-3.5 py-1.5 font-mono text-[11px] tracking-[0.14em] uppercase"
+                      style={{
+                        borderColor: `rgba(${tint.r}, ${tint.g}, ${tint.b}, ${on ? 1 : 0.4})`,
+                        background: on
+                          ? `rgb(${tint.r}, ${tint.g}, ${tint.b})`
+                          : "transparent",
+                        color: on ? "#0b0907" : `rgb(${tint.r}, ${tint.g}, ${tint.b})`,
+                      }}
+                    >
+                      {MIX_KEYS[id].label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -242,9 +264,29 @@ export function MixPanel({
               {mix.tempo === "lock" ? (
                 <div className="flex min-w-32 flex-1 flex-col gap-2">
                   <label className="flex items-center gap-2">
-                    <span className="w-10 font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChange({ ...mix, bpm: Math.max(70, Math.round(mix.bpm) - 2) })
+                      }
+                      className="size-8 rounded-full border border-[#f4efe6]/20 font-mono text-[14px] text-[#f4efe6]/70"
+                      aria-label="Slower"
+                    >
+                      −
+                    </button>
+                    <span className="w-10 text-center font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
                       {Math.round(mix.bpm)}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChange({ ...mix, bpm: Math.min(150, Math.round(mix.bpm) + 2) })
+                      }
+                      className="size-8 rounded-full border border-[#f4efe6]/20 font-mono text-[14px] text-[#f4efe6]/70"
+                      aria-label="Faster"
+                    >
+                      +
+                    </button>
                     <input
                       type="range"
                       min={70}
