@@ -1,5 +1,27 @@
 export type TempoMode = "follow" | "lock";
 
+export type MixKeyId = "dorian" | "minor" | "major" | "penta" | "phryg";
+
+export type MixHarmony = {
+  label: string;
+  root: number;
+  scale: readonly number[];
+};
+
+export const MIX_KEYS: Record<MixKeyId, MixHarmony> = {
+  dorian: { label: "D dorian", root: 50, scale: [2, 4, 5, 7, 9, 11, 12] },
+  minor: { label: "A minor", root: 45, scale: [0, 3, 5, 7, 8, 10, 12] },
+  major: { label: "C major", root: 48, scale: [0, 4, 5, 7, 11, 12, 16] },
+  penta: { label: "G penta", root: 43, scale: [0, 3, 5, 7, 10] },
+  phryg: { label: "E phryg", root: 52, scale: [0, 1, 5, 7, 8, 10, 12] },
+};
+
+const KEY_IDS = Object.keys(MIX_KEYS) as MixKeyId[];
+
+export function mixHarmony(mix: MixSettings): MixHarmony {
+  return MIX_KEYS[mix.key] ?? MIX_KEYS.dorian;
+}
+
 export type MixSettings = {
   volume: number;
   voice: number;
@@ -13,6 +35,8 @@ export type MixSettings = {
   chop: number;
   click: number;
   bed: number;
+  space: number;
+  key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
 };
@@ -32,6 +56,8 @@ export const MIX_DEFAULTS: MixSettings = {
   chop: 0.42,
   click: 0,
   bed: 0.55,
+  space: 0.28,
+  key: "dorian",
   tempo: "follow",
   bpm: 96,
 };
@@ -50,6 +76,8 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.62,
     chop: 0.58,
     bed: 0.38,
+    space: 0.12,
+    key: "dorian",
     tempo: "follow",
     bpm: 108,
   },
@@ -66,6 +94,8 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.5,
     chop: 0.35,
     bed: 0.72,
+    space: 0.44,
+    key: "minor",
     tempo: "follow",
     bpm: 92,
   },
@@ -83,6 +113,8 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     chop: 0.22,
     click: 0.28,
     bed: 0.64,
+    space: 0.5,
+    key: "major",
     tempo: "lock",
     bpm: 84,
   },
@@ -99,6 +131,8 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.12,
     chop: 0.48,
     bed: 0.32,
+    space: 0.1,
+    key: "penta",
     tempo: "follow",
     bpm: 100,
   },
@@ -112,6 +146,10 @@ function asNumber(value: unknown, fallback: number, min: number, max: number): n
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
+}
+
+function parseKey(value: unknown): MixKeyId {
+  return KEY_IDS.includes(value as MixKeyId) ? (value as MixKeyId) : MIX_DEFAULTS.key;
 }
 
 export function parseMix(raw: unknown): MixSettings {
@@ -130,6 +168,8 @@ export function parseMix(raw: unknown): MixSettings {
     chop: asNumber(row.chop, MIX_DEFAULTS.chop, 0, 1),
     click: asNumber(row.click, MIX_DEFAULTS.click, 0, 1),
     bed: asNumber(row.bed, MIX_DEFAULTS.bed, 0, 1),
+    space: asNumber(row.space, MIX_DEFAULTS.space, 0, 1),
+    key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
   };
@@ -191,6 +231,8 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.chop === b.chop &&
     a.click === b.click &&
     a.bed === b.bed &&
+    a.space === b.space &&
+    a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
   );
