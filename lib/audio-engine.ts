@@ -560,8 +560,8 @@ export class LiltEngine {
     }
     if (kick) this.hitKick(time, this.drumLevel(walking ? 0.95 : 0.68));
     if (snare) this.hitSnare(time, this.drumLevel(0.58 + energy * 0.28));
-    if (hat) this.hitHat(time, open, this.drumLevel(denseHats ? 0.26 : walking ? 0.18 : 0.13));
-    if (shaker) this.hitShaker(time, this.drumLevel(0.08 + energy * 0.08));
+    if (hat) this.hitHat(time, open, this.hatLevel(denseHats ? 0.26 : walking ? 0.18 : 0.13));
+    if (shaker) this.hitShaker(time, this.hatLevel(0.08 + energy * 0.08));
     if (grainHit) this.hitLatestGrain(time, beat);
 
     if (beat % 8 === 0) this.moveHarmony(time);
@@ -738,6 +738,10 @@ export class LiltEngine {
     const walking = this.motion?.walking ?? false;
     const hush = walking ? 1 : lerp(1, 0.12, clamp(this.mix.hush, 0, 1));
     return gain * clamp(this.mix.drums, 0, 1) * hush;
+  }
+
+  private hatLevel(gain: number): number {
+    return this.drumLevel(gain) * lerp(0.06, 1.15, clamp(this.mix.hats, 0, 1));
   }
 
   private hitClick(time: number, gain: number, downbeat: boolean): void {
