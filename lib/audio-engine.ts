@@ -1,5 +1,5 @@
 import { clamp, hzToMidi, lerp, midiToHz, quantizeToScale } from "@/lib/math";
-import { MIX_DEFAULTS, mixHarmony, type MixSettings } from "@/lib/mix";
+import { MIX_DEFAULTS, mixHarmony, mixKeyTint, type MixSettings } from "@/lib/mix";
 import type { EngineSnapshot, HeadPose, MotionSnapshot } from "@/lib/types";
 import { VoiceSampler, type CapturedGrain } from "@/lib/voice-sampler";
 
@@ -30,6 +30,7 @@ export class LiltEngine {
   private bassOsc!: OscillatorNode;
   private bassGain!: GainNode;
   private bassFilter!: BiquadFilterNode;
+  private bassShaper!: WaveShaperNode;
   private padOscA!: OscillatorNode;
   private padOscB!: OscillatorNode;
   private padOscC!: OscillatorNode;
@@ -147,6 +148,9 @@ export class LiltEngine {
     this.sampler?.setSensitivity(mix.sensitivity);
     this.sampler?.setChop(mix.chop);
     this.sampler?.setThump(mix.thump);
+    if (this.bassShaper) {
+      this.bassShaper.curve = makeDriveCurve(lerp(2, 28, mix.drive)) as Float32Array<ArrayBuffer>;
+    }
     if (ctx && this.bassGain) {
       this.bassGain.gain.setTargetAtTime(0.06 + mix.bed * 0.22, ctx.currentTime, 0.06);
     }
@@ -269,6 +273,7 @@ export class LiltEngine {
       drums: this.mix.drums,
       space: this.mix.space,
       keyLabel: mixHarmony(this.mix).label,
+      keyTint: mixKeyTint(this.mix.key),
       ready: this.running,
     };
   }
@@ -315,11 +320,11 @@ export class LiltEngine {
     this.bassOsc = ctx.createOscillator();
     this.bassOsc.type = "sawtooth";
     this.bassOsc.frequency.value = midiToHz(mixHarmony(this.mix).root);
-    const shaper = ctx.createWaveShaper();
-    shaper.curve = makeDriveCurve(12) as Float32Array<ArrayBuffer>;
+    this.bassShaper = ctx.createWaveShaper();
+    this.bassShaper.curve = makeDriveCurve(lerp(2, 28, this.mix.drive)) as Float32Array<ArrayBuffer>;
     this.bassOsc.connect(this.bassFilter);
-    this.bassFilter.connect(shaper);
-    shaper.connect(this.bassGain);
+    this.bassFilter.connect(this.bassShaper);
+    this.bassShaper.connect(this.bassGain);
     this.bassGain.connect(this.filter);
     this.bassOsc.start();
   }
@@ -745,7 +750,11 @@ export class LiltEngine {
     );
     amp.gain.exponentialRampToValueAtTime(0.001, time + Math.min(0.55, grain.duration + 0.05));
     const pan = ctx.createStereoPanner();
-    pan.pan.value = clamp((this.motion?.head.yaw ?? 0) * 0.7, -0.8, 0.8);
+    pan.pan.value = clamp(
+      (this.motion?.head.yaw ?? 0) * lerp(0.04, 0.95, this.mix.width),
+      -0.85,
+      0.85,
+    );
     source.connect(amp);
     amp.connect(pan);
     pan.connect(this.filter);
