@@ -93,6 +93,8 @@ export function MixPanel({
   const current = activePreset(mix);
   const undo = peekUndoMix();
   const [folded, setFolded] = useState<Record<string, boolean>>({
+    Sound: true,
+    Color: true,
     Voice: true,
     Move: true,
   });
@@ -181,10 +183,13 @@ export function MixPanel({
                     <button
                       type="button"
                       onClick={() =>
-                        setFolded((currentFold) => ({
-                          ...currentFold,
-                          [group.label]: !hidden,
-                        }))
+                        setFolded(() => {
+                          const next: Record<string, boolean> = {};
+                          for (const row of GROUPS) {
+                            next[row.label] = hidden ? row.label !== group.label : true;
+                          }
+                          return next;
+                        })
                       }
                       className="mb-2 flex w-full items-center justify-between font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase"
                       aria-expanded={!hidden}
