@@ -121,6 +121,7 @@ export class LiltEngine {
     this.sampler = new VoiceSampler(ctx.sampleRate);
     this.sampler.setSensitivity(this.mix.sensitivity);
     this.sampler.setChop(this.mix.chop);
+    this.sampler.setHold(this.mix.hold);
     this.sampler.setThump(this.mix.thump);
     if (mic) {
       await this.connectMic(ctx, mic);
@@ -147,6 +148,7 @@ export class LiltEngine {
     }
     this.sampler?.setSensitivity(mix.sensitivity);
     this.sampler?.setChop(mix.chop);
+    this.sampler?.setHold(mix.hold);
     this.sampler?.setThump(mix.thump);
     if (this.bassShaper) {
       this.bassShaper.curve = makeDriveCurve(lerp(2, 28, mix.drive)) as Float32Array<ArrayBuffer>;
