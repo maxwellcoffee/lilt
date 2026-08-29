@@ -49,6 +49,7 @@ export type MixSettings = {
   steer: number;
   chop: number;
   hold: number;
+  snap: number;
   click: number;
   glide: number;
   bed: number;
@@ -83,6 +84,7 @@ export const MIX_DEFAULTS: MixSettings = {
   steer: 0.55,
   chop: 0.42,
   hold: 0.42,
+  snap: 0.5,
   click: 0,
   glide: 0.4,
   bed: 0.55,
@@ -117,6 +119,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.62,
     chop: 0.58,
     hold: 0.32,
+    snap: 0.72,
     glide: 0.18,
     bed: 0.38,
     space: 0.12,
@@ -148,6 +151,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.5,
     chop: 0.35,
     hold: 0.62,
+    snap: 0.48,
     glide: 0.48,
     bed: 0.72,
     space: 0.44,
@@ -179,6 +183,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.38,
     chop: 0.22,
     hold: 0.78,
+    snap: 0.58,
     click: 0.28,
     glide: 0.7,
     bed: 0.64,
@@ -211,6 +216,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.12,
     chop: 0.48,
     hold: 0.2,
+    snap: 0.28,
     glide: 0.32,
     bed: 0.32,
     space: 0.1,
@@ -261,6 +267,7 @@ export function parseMix(raw: unknown): MixSettings {
     steer: asNumber(row.steer, MIX_DEFAULTS.steer, 0, 1),
     chop: asNumber(row.chop, MIX_DEFAULTS.chop, 0, 1),
     hold: asNumber(row.hold, MIX_DEFAULTS.hold, 0, 1),
+    snap: asNumber(row.snap, MIX_DEFAULTS.snap, 0, 1),
     click: asNumber(row.click, MIX_DEFAULTS.click, 0, 1),
     glide: asNumber(row.glide, MIX_DEFAULTS.glide, 0, 1),
     bed: asNumber(row.bed, MIX_DEFAULTS.bed, 0, 1),
@@ -343,6 +350,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.steer === b.steer &&
     a.chop === b.chop &&
     a.hold === b.hold &&
+    a.snap === b.snap &&
     a.click === b.click &&
     a.glide === b.glide &&
     a.bed === b.bed &&
