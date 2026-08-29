@@ -74,6 +74,7 @@ export type MixSettings = {
   lag: number;
   nod: number;
   turn: number;
+  wait: number;
   key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
@@ -118,6 +119,7 @@ export const MIX_DEFAULTS: MixSettings = {
   lag: 0.4,
   nod: 0.5,
   turn: 0.5,
+  wait: 0.4,
   key: "dorian",
   tempo: "follow",
   bpm: 96,
@@ -161,6 +163,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     lag: 0.16,
     nod: 0.68,
     turn: 0.62,
+    wait: 0.18,
     key: "dorian",
     tempo: "follow",
     bpm: 108,
@@ -202,6 +205,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     lag: 0.42,
     nod: 0.48,
     turn: 0.48,
+    wait: 0.42,
     key: "minor",
     tempo: "follow",
     bpm: 92,
@@ -244,6 +248,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     lag: 0.72,
     nod: 0.28,
     turn: 0.32,
+    wait: 0.68,
     key: "major",
     tempo: "lock",
     bpm: 84,
@@ -285,6 +290,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     lag: 0.48,
     nod: 0.42,
     turn: 0.38,
+    wait: 0.45,
     key: "penta",
     tempo: "follow",
     bpm: 100,
@@ -346,6 +352,7 @@ export function parseMix(raw: unknown): MixSettings {
     lag: asNumber(row.lag, MIX_DEFAULTS.lag, 0, 1),
     nod: asNumber(row.nod, MIX_DEFAULTS.nod, 0, 1),
     turn: asNumber(row.turn, MIX_DEFAULTS.turn, 0, 1),
+    wait: asNumber(row.wait, MIX_DEFAULTS.wait, 0, 1),
     key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
@@ -438,6 +445,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.lag === b.lag &&
     a.nod === b.nod &&
     a.turn === b.turn &&
+    a.wait === b.wait &&
     a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
@@ -454,5 +462,5 @@ export function activePreset(mix: MixSettings): MixPresetId | null {
 export function mixChipLabel(mix: MixSettings): string {
   const preset = activePreset(mix);
   const tempo = mix.tempo === "lock" ? `${Math.round(mix.bpm)}` : "follow";
-  return preset ? `${preset} · ${tempo}` : tempo;
+  return preset ? `${preset} \u00b7 ${tempo}` : tempo;
 }
