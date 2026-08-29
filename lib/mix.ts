@@ -67,6 +67,7 @@ export type MixSettings = {
   skin: number;
   snare: number;
   hats: number;
+  tom: number;
   width: number;
   bounce: number;
   hang: number;
@@ -112,6 +113,7 @@ export const MIX_DEFAULTS: MixSettings = {
   skin: 0.45,
   snare: 0.5,
   hats: 0.5,
+  tom: 0.5,
   width: 0.5,
   bounce: 0.45,
   hang: 0.5,
@@ -156,6 +158,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     skin: 0.62,
     snare: 0.68,
     hats: 0.72,
+    tom: 0.62,
     width: 0.62,
     bounce: 0.58,
     hang: 0.45,
@@ -198,6 +201,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     skin: 0.38,
     snare: 0.48,
     hats: 0.48,
+    tom: 0.48,
     width: 0.45,
     bounce: 0.4,
     hang: 0.52,
@@ -241,6 +245,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     skin: 0.18,
     snare: 0.22,
     hats: 0.18,
+    tom: 0.18,
     width: 0.32,
     bounce: 0.28,
     hang: 0.22,
@@ -283,6 +288,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     skin: 0.7,
     snare: 0.42,
     hats: 0.38,
+    tom: 0.38,
     width: 0.22,
     bounce: 0.12,
     hang: 0.78,
@@ -345,6 +351,7 @@ export function parseMix(raw: unknown): MixSettings {
     skin: asNumber(row.skin, MIX_DEFAULTS.skin, 0, 1),
     snare: asNumber(row.snare, MIX_DEFAULTS.snare, 0, 1),
     hats: asNumber(row.hats, MIX_DEFAULTS.hats, 0, 1),
+    tom: asNumber(row.tom, MIX_DEFAULTS.tom, 0, 1),
     width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
     bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
@@ -438,6 +445,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.skin === b.skin &&
     a.snare === b.snare &&
     a.hats === b.hats &&
+    a.tom === b.tom &&
     a.width === b.width &&
     a.bounce === b.bounce &&
     a.hang === b.hang &&
@@ -462,5 +470,5 @@ export function activePreset(mix: MixSettings): MixPresetId | null {
 export function mixChipLabel(mix: MixSettings): string {
   const preset = activePreset(mix);
   const tempo = mix.tempo === "lock" ? `${Math.round(mix.bpm)}` : "follow";
-  return preset ? `${preset} \u00b7 ${tempo}` : tempo;
+  return preset ? `${preset} · ${tempo}` : tempo;
 }
