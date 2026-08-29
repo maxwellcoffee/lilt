@@ -338,7 +338,7 @@ export function getLiveMix(): MixSettings {
   return live;
 }
 
-export function writeMix(next: MixSettings): void {
+export function writeMix(next: MixSettings): MixSettings {
   const parsed = parseMix(next);
   if (live && !mixEquals(live, parsed)) prior = live;
   live = parsed;
