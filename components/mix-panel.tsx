@@ -38,6 +38,7 @@ type SliderKey = keyof Pick<
   | "density"
   | "steer"
   | "chop"
+  | "hold"
   | "bed"
   | "space"
   | "hush"
@@ -60,6 +61,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   swing: { label: "Swing", max: 0.4 },
   voice: { label: "Voice", max: 1 },
   chop: { label: "Chop", max: 1 },
+  hold: { label: "Hold", max: 1 },
   sensitivity: { label: "Catch hums", max: 1 },
   thump: { label: "Thump", max: 1 },
   steer: { label: "Steer", max: 1 },
@@ -72,7 +74,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
   { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "density"] },
   { label: "Color", keys: ["echo", "space", "brightness", "swing", "width"] },
-  { label: "Voice", keys: ["voice", "chop", "sensitivity", "thump"] },
+  { label: "Voice", keys: ["voice", "chop", "hold", "sensitivity", "thump"] },
   { label: "Move", keys: ["steer", "bounce", "haptic"] },
 ];
 
@@ -138,6 +140,35 @@ export function MixPanel({
                   Undo
                 </button>
               ) : null}
+            </div>
+
+            <div className="mb-5">
+              <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
+                Key
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(MIX_KEYS) as MixKeyId[]).map((id) => {
+                  const tint = mixKeyTint(id);
+                  const on = mix.key === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => onChange({ ...mix, key: id })}
+                      className="min-h-9 rounded-full border px-3.5 py-1.5 font-mono text-[11px] tracking-[0.14em] uppercase"
+                      style={{
+                        borderColor: `rgba(${tint.r}, ${tint.g}, ${tint.b}, ${on ? 1 : 0.4})`,
+                        background: on
+                          ? `rgb(${tint.r}, ${tint.g}, ${tint.b})`
+                          : "transparent",
+                        color: on ? "#0b0907" : `rgb(${tint.r}, ${tint.g}, ${tint.b})`,
+                      }}
+                    >
+                      {MIX_KEYS[id].label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="space-y-5">
@@ -211,35 +242,6 @@ export function MixPanel({
                   </div>
                 );
               })}
-            </div>
-
-            <div className="mt-5">
-              <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
-                Key
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(MIX_KEYS) as MixKeyId[]).map((id) => {
-                  const tint = mixKeyTint(id);
-                  const on = mix.key === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => onChange({ ...mix, key: id })}
-                      className="min-h-9 rounded-full border px-3.5 py-1.5 font-mono text-[11px] tracking-[0.14em] uppercase"
-                      style={{
-                        borderColor: `rgba(${tint.r}, ${tint.g}, ${tint.b}, ${on ? 1 : 0.4})`,
-                        background: on
-                          ? `rgb(${tint.r}, ${tint.g}, ${tint.b})`
-                          : "transparent",
-                        color: on ? "#0b0907" : `rgb(${tint.r}, ${tint.g}, ${tint.b})`,
-                      }}
-                    >
-                      {MIX_KEYS[id].label}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
 
             <div className="mt-5">
