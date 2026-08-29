@@ -1,10 +1,8 @@
 import { clamp, hzToMidi, lerp, midiToHz, quantizeToScale } from "@/lib/math";
-import { MIX_DEFAULTS, type MixSettings } from "@/lib/mix";
+import { MIX_DEFAULTS, mixHarmony, type MixSettings } from "@/lib/mix";
 import type { EngineSnapshot, HeadPose, MotionSnapshot } from "@/lib/types";
 import { VoiceSampler, type CapturedGrain } from "@/lib/voice-sampler";
 
-const SCALE = [2, 4, 5, 7, 9, 11, 12] as const; // D dorian degrees
-const ROOT = 50; // D3
 const LOOKAHEAD = 0.025;
 const SCHEDULE_AHEAD = 0.12;
 const DEFAULT_BPM = 96;
@@ -27,6 +25,7 @@ export class LiltEngine {
   private analyser!: AnalyserNode;
   private delay!: DelayNode;
   private delayGain!: GainNode;
+  private reverbWet!: GainNode;
   private filter!: BiquadFilterNode;
   private bassOsc!: OscillatorNode;
   private bassGain!: GainNode;
@@ -149,6 +148,9 @@ export class LiltEngine {
     if (ctx && this.bassGain) {
       this.bassGain.gain.setTargetAtTime(0.06 + mix.bed * 0.22, ctx.currentTime, 0.06);
     }
+    if (ctx && this.reverbWet) {
+      this.reverbWet.gain.setTargetAtTime(mix.space * 0.42, ctx.currentTime, 0.08);
+    }
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
     }
@@ -263,6 +265,8 @@ export class LiltEngine {
       waveform: this.waveform,
       brightness: this.mix.brightness,
       drums: this.mix.drums,
+      space: this.mix.space,
+      keyLabel: mixHarmony(this.mix).label,
       ready: this.running,
     };
   }
@@ -308,7 +312,7 @@ export class LiltEngine {
     this.bassGain.gain.value = 0.2;
     this.bassOsc = ctx.createOscillator();
     this.bassOsc.type = "sawtooth";
-    this.bassOsc.frequency.value = midiToHz(ROOT);
+    this.bassOsc.frequency.value = midiToHz(mixHarmony(this.mix).root);
     const shaper = ctx.createWaveShaper();
     shaper.curve = makeDriveCurve(12) as Float32Array<ArrayBuffer>;
     this.bassOsc.connect(this.bassFilter);
@@ -331,7 +335,7 @@ export class LiltEngine {
     this.padOscA.type = "sine";
     this.padOscB.type = "triangle";
     this.padOscC.type = "sine";
-    const hz = midiToHz(ROOT + 12);
+    const hz = midiToHz(mixHarmony(this.mix).root + 12);
     this.padOscA.frequency.value = hz;
     this.padOscB.frequency.value = hz * 1.004;
     this.padOscC.frequency.value = hz * 0.5;
@@ -358,11 +362,11 @@ export class LiltEngine {
     }
     const convolver = ctx.createConvolver();
     convolver.buffer = impulse;
-    const wet = ctx.createGain();
-    wet.gain.value = 0.16;
+    this.reverbWet = ctx.createGain();
+    this.reverbWet.gain.value = this.mix.space * 0.42;
     this.filter.connect(convolver);
-    convolver.connect(wet);
-    wet.connect(this.compressor);
+    convolver.connect(this.reverbWet);
+    this.reverbWet.connect(this.compressor);
   }
 
   private async connectMic(ctx: AudioContext, mic: MediaStream): Promise<void> {
@@ -576,10 +580,11 @@ export class LiltEngine {
 
   private moveHarmony(time: number): void {
     const yaw = (this.motion?.head.yaw ?? 0) * clamp(this.mix.steer, 0, 1);
-    const index = Math.round(((yaw + 1) / 2) * (SCALE.length - 1));
-    const degree = SCALE[clamp(index, 0, SCALE.length - 1)] ?? 2;
-    const bassMidi = ROOT + degree;
-    const padMidi = ROOT + 12 + degree;
+    const { root, scale } = mixHarmony(this.mix);
+    const index = Math.round(((yaw + 1) / 2) * (scale.length - 1));
+    const degree = scale[clamp(index, 0, scale.length - 1)] ?? 2;
+    const bassMidi = root + degree;
+    const padMidi = root + 12 + degree;
     this.bassOsc.frequency.setTargetAtTime(midiToHz(bassMidi), time, 0.09);
     this.padOscA.frequency.setTargetAtTime(midiToHz(padMidi), time, 0.16);
     this.padOscB.frequency.setTargetAtTime(midiToHz(padMidi) * 1.004, time, 0.16);
@@ -748,11 +753,12 @@ export class LiltEngine {
     const steer = clamp(this.mix.steer, 0, 1);
     const yaw = (this.motion?.head.yaw ?? 0) * steer;
     const pitch = (this.motion?.head.pitch ?? 0) * steer;
-    const index = Math.round(((yaw + 1) / 2) * (SCALE.length - 1));
-    const targetMidi = ROOT + 12 + (SCALE[clamp(index, 0, SCALE.length - 1)] ?? 7);
+    const { root, scale } = mixHarmony(this.mix);
+    const index = Math.round(((yaw + 1) / 2) * (scale.length - 1));
+    const targetMidi = root + 12 + (scale[clamp(index, 0, scale.length - 1)] ?? 7);
     const targetHz = midiToHz(targetMidi + pitch * 4);
     if (grain.f0) {
-      const snapped = midiToHz(quantizeToScale(hzToMidi(grain.f0), SCALE));
+      const snapped = midiToHz(quantizeToScale(hzToMidi(grain.f0), scale));
       return clamp(targetHz / snapped, 0.55, 1.7);
     }
     return clamp(0.85 + pitch * 0.25 + yaw * 0.08, 0.6, 1.5);
