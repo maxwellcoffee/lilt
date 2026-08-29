@@ -27,6 +27,7 @@ export class VoiceSampler {
   private lastFootstepAt = 0;
   private lastSliceAt = 0;
   private footstep = false;
+  private sensitivity = 0.55;
   readonly grains: CapturedGrain[] = [];
   private readonly maxGrains = 5;
 
@@ -50,6 +51,10 @@ export class VoiceSampler {
     return this.lastCaptureAt;
   }
 
+  setSensitivity(value: number): void {
+    this.sensitivity = Math.min(1, Math.max(0, value));
+  }
+
   consumeFootstep(): boolean {
     const hit = this.footstep;
     this.footstep = false;
@@ -70,8 +75,9 @@ export class VoiceSampler {
       this.noiseFloor = this.noiseFloor * 0.992 + this.lastRms * 0.008;
     }
 
-    const open = Math.max(this.noiseFloor * 3.4, 0.007);
-    const close = Math.max(this.noiseFloor * 1.8, 0.0045);
+    const openMul = 5.2 - this.sensitivity * 3.4;
+    const open = Math.max(this.noiseFloor * openMul, 0.0035);
+    const close = Math.max(this.noiseFloor * (openMul * 0.5), 0.0025);
     const voicedLike = zcr > 0.02 && zcr < 0.28;
     const stepFloor = Math.max(this.noiseFloor * 2.8, 0.008);
 

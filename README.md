@@ -11,7 +11,7 @@ Walking sets the tempo. Humming or talking is chopped into samples. Nodding, tur
 3. Tap **Begin** and allow microphone. Allow motion when iOS asks. Allow the camera if you want head tracking while the front camera can see your face.
 4. Put the phone in a pocket or hold it. Walk. Hum a phrase. Turn your head.
 
-After that first tap there are no controls. The beat keeps a walking pulse even if you stand still; motion and voice only sculpt it.
+After that first tap the walk runs itself. Open **Mix** if you want sliders for volume, voice, how easily hums catch, echo, brightness, swing, and whether tempo follows your gait or stays locked. Street / Room / Soft are starting points. Mix is optional. End walk lives in that same drawer.
 
 | Body | Music |
 | --- | --- |
@@ -26,7 +26,7 @@ After that first tap there are no controls. The beat keeps a walking pulse even 
 
 AirPods become the microphone and the speakers as soon as they are the system audio device. That is how voice samples and in-ear beats work.
 
-Browsers do not expose Apple's headphone IMU (`CMHeadphoneMotionManager`). Lilt therefore fuses three signals that *are* available on the web:
+Browsers do not expose Apple’s headphone IMU (`CMHeadphoneMotionManager`). Lilt therefore fuses three signals that *are* available on the web:
 
 - **AirPods microphone** — voice grains and footstep thumps
 - **Phone motion** — gait and, when the phone is in your hand, tilt

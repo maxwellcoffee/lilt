@@ -1,4 +1,5 @@
 import { clamp, hzToMidi, lerp, midiToHz, quantizeToScale } from "@/lib/math";
+import { MIX_DEFAULTS, type MixSettings } from "@/lib/mix";
 import type { EngineSnapshot, HeadPose, MotionSnapshot } from "@/lib/types";
 import { VoiceSampler, type CapturedGrain } from "@/lib/voice-sampler";
 
@@ -60,6 +61,7 @@ export class LiltEngine {
   private micSource: MediaStreamAudioSourceNode | null = null;
   private startedAt = 0;
   private running = false;
+  private mix: MixSettings = { ...MIX_DEFAULTS };
 
   get context(): AudioContext | null {
     return this.ctx;
@@ -72,7 +74,7 @@ export class LiltEngine {
     await ctx.resume();
 
     this.master = ctx.createGain();
-    this.master.gain.value = 0.85;
+    this.master.gain.value = this.mix.volume;
 
     this.compressor = ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
@@ -114,6 +116,7 @@ export class LiltEngine {
     this.connectReverb(ctx);
 
     this.sampler = new VoiceSampler(ctx.sampleRate);
+    this.sampler.setSensitivity(this.mix.sensitivity);
     if (mic) {
       await this.connectMic(ctx, mic);
     }
@@ -125,16 +128,30 @@ export class LiltEngine {
     this.timer = window.setInterval(() => this.scheduler(), LOOKAHEAD * 1000);
   }
 
+  setMix(mix: MixSettings): void {
+    this.mix = mix;
+    const ctx = this.ctx;
+    if (ctx && this.master) {
+      this.master.gain.setTargetAtTime(mix.volume, ctx.currentTime, 0.04);
+    }
+    this.sampler?.setSensitivity(mix.sensitivity);
+    if (mix.tempo === "lock") {
+      this.targetBpm = clamp(mix.bpm, 70, 150);
+    }
+  }
+
   setStepListener(listener: ((intensity: number) => void) | null): void {
     this.onHeardStep = listener;
   }
 
   setMotion(motion: MotionSnapshot): void {
     this.motion = motion;
-    if (motion.bpm) {
+    if (this.mix.tempo === "lock") {
+      this.targetBpm = clamp(this.mix.bpm, 70, 150);
+    } else if (motion.bpm) {
       this.targetBpm = clamp(motion.bpm, 74, 148);
     } else if (!motion.walking) {
-      this.targetBpm = lerp(this.targetBpm, DEFAULT_BPM, 0.02);
+      this.targetBpm = lerp(this.targetBpm, this.mix.bpm, 0.02);
     }
 
     const now = this.ctx?.currentTime ?? 0;
@@ -401,7 +418,11 @@ export class LiltEngine {
     if (!ctx || !this.running) return;
     this.bpm = lerp(this.bpm, this.targetBpm, 0.08);
     const secondsPer16 = 60 / this.bpm / 4;
-    const swing = clamp((this.motion?.head.roll ?? 0) * 0.18, -0.12, 0.18);
+    const swing = clamp(
+      this.mix.swing + (this.motion?.head.roll ?? 0) * 0.12,
+      -0.08,
+      0.32,
+    );
 
     while (this.nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
       const beat = this.step16 % 16;
@@ -449,12 +470,16 @@ export class LiltEngine {
     const ctx = this.ctx;
     if (!ctx) return;
     const now = ctx.currentTime;
-    const cutoff = 700 + (motion.head.yaw + 1) * 1800 + motion.accelEnergy * 400;
-    this.filter.frequency.setTargetAtTime(clamp(cutoff, 400, 5200), now, 0.08);
+    const cutoff =
+      400 +
+      this.mix.brightness * 2200 +
+      (motion.head.yaw + 1) * 900 +
+      motion.accelEnergy * 300;
+    this.filter.frequency.setTargetAtTime(clamp(cutoff, 280, 6200), now, 0.08);
     const delayTime = clamp((60 / this.bpm) * (0.55 + motion.head.roll * 0.2), 0.12, 0.75);
     this.delay.delayTime.setTargetAtTime(delayTime, now, 0.12);
     this.delayGain.gain.setTargetAtTime(
-      clamp(0.12 + Math.abs(motion.head.roll) * 0.28, 0.08, 0.42),
+      clamp(this.mix.echo * 0.55 + Math.abs(motion.head.roll) * 0.18, 0.02, 0.5),
       now,
       0.1,
     );
@@ -606,7 +631,10 @@ export class LiltEngine {
     source.playbackRate.value = this.grainRate(grain);
     const amp = ctx.createGain();
     amp.gain.setValueAtTime(0.0001, time);
-    amp.gain.linearRampToValueAtTime(gain * clamp(grain.rms * 8, 0.25, 0.7), time + 0.01);
+    amp.gain.linearRampToValueAtTime(
+      gain * this.mix.voice * clamp(grain.rms * 8, 0.25, 0.7),
+      time + 0.01,
+    );
     amp.gain.exponentialRampToValueAtTime(0.001, time + Math.min(0.55, grain.duration + 0.05));
     const pan = ctx.createStereoPanner();
     pan.pan.value = clamp((this.motion?.head.yaw ?? 0) * 0.7, -0.8, 0.8);

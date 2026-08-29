@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { MixPanel } from "@/components/mix-panel";
 import { VisualField } from "@/components/visual-field";
 import { LiltEngine } from "@/lib/audio-engine";
 import { HeadCamera } from "@/lib/head-camera";
+import { MIX_DEFAULTS, loadMix, saveMix, type MixSettings } from "@/lib/mix";
 import { MotionRig } from "@/lib/sensors";
 import type { EngineSnapshot, SensorPermissions } from "@/lib/types";
 
@@ -25,6 +27,8 @@ export function LiltApp() {
   const [snapshot, setSnapshot] = useState<EngineSnapshot | null>(null);
   const snapshotRef = useRef<EngineSnapshot | null>(null);
   const [video, setVideo] = useState<HTMLVideoElement | null>(null);
+  const [mix, setMix] = useState<MixSettings>(MIX_DEFAULTS);
+  const [mixOpen, setMixOpen] = useState(false);
 
   const teardown = useCallback(async () => {
     cameraRef.current?.stop();
@@ -45,6 +49,12 @@ export function LiltApp() {
       void teardown();
     };
   }, [teardown]);
+
+  const applyMix = useCallback((next: MixSettings) => {
+    setMix(next);
+    saveMix(next);
+    engineRef.current?.setMix(next);
+  }, []);
 
   const begin = useCallback(async () => {
     setPhase("starting");
@@ -72,6 +82,9 @@ export function LiltApp() {
       return;
     }
     engineRef.current = engine;
+    const stored = loadMix();
+    setMix(stored);
+    engine.setMix(stored);
     engine.setStepListener((intensity) => motion.registerStep(intensity));
 
     if (cam) {
@@ -157,7 +170,19 @@ export function LiltApp() {
           onBegin={() => void begin()}
         />
       ) : (
-        <PlayingHud snapshot={snapshot} permissions={permissions} />
+        <>
+          <PlayingHud snapshot={snapshot} permissions={permissions} />
+          <MixPanel
+            mix={mix}
+            open={mixOpen}
+            onOpenChange={setMixOpen}
+            onChange={applyMix}
+            onEnd={() => {
+              setMixOpen(false);
+              void teardown().then(() => setPhase("gate"));
+            }}
+          />
+        </>
       )}
     </div>
   );
