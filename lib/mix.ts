@@ -71,6 +71,7 @@ export type MixSettings = {
   snare: number;
   hats: number;
   tom: number;
+  deep: number;
   width: number;
   bounce: number;
   hang: number;
@@ -120,6 +121,7 @@ export const MIX_DEFAULTS: MixSettings = {
   snare: 0.5,
   hats: 0.5,
   tom: 0.5,
+  deep: 0.5,
   width: 0.5,
   bounce: 0.45,
   hang: 0.5,
@@ -168,6 +170,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     snare: 0.68,
     hats: 0.72,
     tom: 0.62,
+    deep: 0.72,
     width: 0.62,
     bounce: 0.58,
     hang: 0.45,
@@ -214,6 +217,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     snare: 0.48,
     hats: 0.48,
     tom: 0.48,
+    deep: 0.48,
     width: 0.45,
     bounce: 0.4,
     hang: 0.52,
@@ -261,6 +265,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     snare: 0.22,
     hats: 0.18,
     tom: 0.18,
+    deep: 0.22,
     width: 0.32,
     bounce: 0.28,
     hang: 0.22,
@@ -307,6 +312,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     snare: 0.42,
     hats: 0.38,
     tom: 0.38,
+    deep: 0.42,
     width: 0.22,
     bounce: 0.12,
     hang: 0.78,
@@ -373,6 +379,7 @@ export function parseMix(raw: unknown): MixSettings {
     snare: asNumber(row.snare, MIX_DEFAULTS.snare, 0, 1),
     hats: asNumber(row.hats, MIX_DEFAULTS.hats, 0, 1),
     tom: asNumber(row.tom, MIX_DEFAULTS.tom, 0, 1),
+    deep: asNumber(row.deep, MIX_DEFAULTS.deep, 0, 1),
     width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
     bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
@@ -470,6 +477,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.snare === b.snare &&
     a.hats === b.hats &&
     a.tom === b.tom &&
+    a.deep === b.deep &&
     a.width === b.width &&
     a.bounce === b.bounce &&
     a.hang === b.hang &&
