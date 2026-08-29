@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { MixPanel } from "@/components/mix-panel";
 import { VisualField } from "@/components/visual-field";
 import { LiltEngine } from "@/lib/audio-engine";
 import { HeadCamera } from "@/lib/head-camera";
-import { MIX_DEFAULTS, loadMix, saveMix, type MixSettings } from "@/lib/mix";
+import {
+  getLiveMix,
+  getServerMix,
+  subscribeMix,
+  writeMix,
+  type MixSettings,
+} from "@/lib/mix";
 import { MotionRig } from "@/lib/sensors";
 import type { EngineSnapshot, SensorPermissions } from "@/lib/types";
 
@@ -27,7 +33,7 @@ export function LiltApp() {
   const [snapshot, setSnapshot] = useState<EngineSnapshot | null>(null);
   const snapshotRef = useRef<EngineSnapshot | null>(null);
   const [video, setVideo] = useState<HTMLVideoElement | null>(null);
-  const [mix, setMix] = useState<MixSettings>(MIX_DEFAULTS);
+  const mix = useSyncExternalStore(subscribeMix, getLiveMix, getServerMix);
   const [mixOpen, setMixOpen] = useState(false);
 
   const teardown = useCallback(async () => {
@@ -51,10 +57,34 @@ export function LiltApp() {
   }, [teardown]);
 
   const applyMix = useCallback((next: MixSettings) => {
-    setMix(next);
-    saveMix(next);
+    writeMix(next);
     engineRef.current?.setMix(next);
   }, []);
+
+  useEffect(() => {
+    engineRef.current?.setMix(mix);
+  }, [mix]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const tag = (event.target as HTMLElement | null)?.tagName;
+      if (event.key === "Escape") {
+        setMixOpen(false);
+        return;
+      }
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (event.key === "m" || event.key === "M") {
+        setMixOpen((open) => !open);
+        return;
+      }
+      if (event.code === "Space" && phase === "playing") {
+        event.preventDefault();
+        motionRef.current?.registerStep(0.75);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase]);
 
   const begin = useCallback(async () => {
     setPhase("starting");
@@ -82,9 +112,7 @@ export function LiltApp() {
       return;
     }
     engineRef.current = engine;
-    const stored = loadMix();
-    setMix(stored);
-    engine.setMix(stored);
+    engine.setMix(getLiveMix());
     engine.setStepListener((intensity) => motion.registerStep(intensity));
 
     if (cam) {
@@ -127,6 +155,7 @@ export function LiltApp() {
     if (phase !== "playing") return;
     let raf = 0;
     let lastHud = 0;
+    let lastVibrate = 0;
     const tick = (now: number) => {
       const engine = engineRef.current;
       const motion = motionRef.current;
@@ -135,6 +164,10 @@ export function LiltApp() {
         engine.setMotion(motionSnap);
         const next = engine.snapshot();
         snapshotRef.current = next;
+        if (next.kickFlash > 0.88 && now - lastVibrate > 220) {
+          lastVibrate = now;
+          navigator.vibrate?.(14);
+        }
         if (now - lastHud > 180) {
           lastHud = now;
           setSnapshot(next);
@@ -152,7 +185,15 @@ export function LiltApp() {
   }, [phase]);
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#0b0907] text-[#f4efe6]">
+    <div
+      className="relative min-h-dvh overflow-hidden bg-[#0b0907] text-[#f4efe6]"
+      onPointerDown={(event) => {
+        if (phase !== "playing" || mixOpen) return;
+        const target = event.target as HTMLElement | null;
+        if (target?.closest("button, input, label, section")) return;
+        motionRef.current?.registerStep(0.7);
+      }}
+    >
       {phase === "playing" ? (
         <VisualField
           snapshotRef={snapshotRef}
@@ -167,23 +208,45 @@ export function LiltApp() {
         <StartGate
           phase={phase}
           error={error}
+          mixOpen={mixOpen}
           onBegin={() => void begin()}
         />
       ) : (
-        <>
-          <PlayingHud snapshot={snapshot} permissions={permissions} />
-          <MixPanel
-            mix={mix}
-            open={mixOpen}
-            onOpenChange={setMixOpen}
-            onChange={applyMix}
-            onEnd={() => {
-              setMixOpen(false);
-              void teardown().then(() => setPhase("gate"));
-            }}
-          />
-        </>
+        <PlayingHud
+          snapshot={snapshot}
+          permissions={permissions}
+          tempo={mix.tempo}
+          lockBpm={mix.bpm}
+        />
       )}
+
+      <MixPanel
+        mix={mix}
+        open={mixOpen}
+        onOpenChange={setMixOpen}
+        onChange={applyMix}
+        samples={snapshot?.voice.sampleCount ?? 0}
+        onClear={
+          phase === "playing"
+            ? () => {
+                engineRef.current?.clearGrains();
+                const next = engineRef.current?.snapshot();
+                if (next) {
+                  snapshotRef.current = next;
+                  setSnapshot(next);
+                }
+              }
+            : undefined
+        }
+        onEnd={
+          phase === "playing"
+            ? () => {
+                setMixOpen(false);
+                void teardown().then(() => setPhase("gate"));
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
@@ -191,15 +254,21 @@ export function LiltApp() {
 function StartGate({
   phase,
   error,
+  mixOpen,
   onBegin,
 }: {
   phase: Phase;
   error: string | null;
+  mixOpen: boolean;
   onBegin: () => void;
 }) {
   const busy = phase === "starting";
   return (
-    <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end px-6 pb-10 pt-16 sm:justify-center sm:pb-16">
+    <main
+      className={`relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end px-6 pt-16 sm:justify-center ${
+        mixOpen ? "pb-[min(72dvh,38rem)]" : "pb-24 sm:pb-28"
+      }`}
+    >
       <p className="font-mono text-[11px] tracking-[0.28em] text-[#e8a87c]/80 uppercase">
         AirPods instrument
       </p>
@@ -243,7 +312,7 @@ function StartGate({
           type="button"
           onClick={onBegin}
           disabled={busy}
-          className="h-12 rounded-full bg-[#f4efe6] px-8 text-[15px] font-medium text-[#0b0907] transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="h-14 rounded-full bg-[#f4efe6] px-8 text-[16px] font-medium text-[#0b0907] transition-opacity hover:opacity-90 disabled:opacity-60"
         >
           {busy ? "Listening…" : "Begin"}
         </button>
@@ -267,13 +336,16 @@ function StartGate({
 function PlayingHud({
   snapshot,
   permissions,
+  tempo,
+  lockBpm,
 }: {
   snapshot: EngineSnapshot | null;
   permissions: SensorPermissions;
+  tempo: MixSettings["tempo"];
+  lockBpm: number;
 }) {
   const missing: string[] = [];
   if (!permissions.microphone) missing.push("mic");
-  if (!permissions.camera) missing.push("camera");
   if (!permissions.motion) missing.push("motion");
 
   return (
@@ -285,7 +357,12 @@ function PlayingHud({
         </p>
       </div>
       <div className="text-right font-mono text-[11px] text-[#f4efe6]/50">
-        <p>{snapshot ? `${Math.round(snapshot.bpm)} bpm` : "—"}</p>
+        <p>
+          {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "—"}
+          <span className="mt-0.5 block text-[10px] tracking-[0.14em] text-[#f4efe6]/35 uppercase">
+            {tempo === "lock" ? `locked ${Math.round(lockBpm)}` : "follows you"}
+          </span>
+        </p>
         <p className="mt-2 flex justify-end gap-1.5" aria-label="Captured samples">
           {Array.from({ length: 5 }, (_, index) => (
             <span
@@ -302,6 +379,11 @@ function PlayingHud({
             />
           ))}
         </p>
+        {!permissions.camera ? (
+          <p className="mt-2 max-w-[12rem] text-[10px] leading-4 text-[#f4efe6]/35">
+            Pointer steers. Tap or Space is a step.
+          </p>
+        ) : null}
         {missing.length > 0 ? (
           <p className="mt-2 max-w-[12rem] text-[10px] leading-4 text-[#f4efe6]/35">
             No {missing.join(" / ")}. Hum and walk with whatever is open.
