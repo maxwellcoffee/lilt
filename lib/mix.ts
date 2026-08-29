@@ -60,6 +60,7 @@ export type MixSettings = {
   haptic: number;
   drive: number;
   punch: number;
+  skin: number;
   width: number;
   bounce: number;
   hang: number;
@@ -93,6 +94,7 @@ export const MIX_DEFAULTS: MixSettings = {
   haptic: 0.55,
   drive: 0.4,
   punch: 0.45,
+  skin: 0.45,
   width: 0.5,
   bounce: 0.45,
   hang: 0.5,
@@ -125,6 +127,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     haptic: 0.7,
     drive: 0.55,
     punch: 0.62,
+    skin: 0.62,
     width: 0.62,
     bounce: 0.58,
     hang: 0.45,
@@ -155,6 +158,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     haptic: 0.4,
     drive: 0.28,
     punch: 0.38,
+    skin: 0.38,
     width: 0.45,
     bounce: 0.4,
     hang: 0.52,
@@ -186,6 +190,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     haptic: 0.2,
     drive: 0.12,
     punch: 0.18,
+    skin: 0.18,
     width: 0.32,
     bounce: 0.28,
     hang: 0.22,
@@ -216,6 +221,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     haptic: 0.85,
     drive: 0.48,
     punch: 0.7,
+    skin: 0.7,
     width: 0.22,
     bounce: 0.12,
     hang: 0.78,
@@ -266,6 +272,7 @@ export function parseMix(raw: unknown): MixSettings {
     haptic: asNumber(row.haptic, MIX_DEFAULTS.haptic, 0, 1),
     drive: asNumber(row.drive, MIX_DEFAULTS.drive, 0, 1),
     punch: asNumber(row.punch, MIX_DEFAULTS.punch, 0, 1),
+    skin: asNumber(row.skin, MIX_DEFAULTS.skin, 0, 1),
     width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
     bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
@@ -347,6 +354,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.haptic === b.haptic &&
     a.drive === b.drive &&
     a.punch === b.punch &&
+    a.skin === b.skin &&
     a.width === b.width &&
     a.bounce === b.bounce &&
     a.hang === b.hang &&
