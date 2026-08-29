@@ -659,19 +659,29 @@ export class LiltEngine {
     const ctx = this.ctx;
     if (!ctx) return;
     this.flashes.snare = 1;
-    this.noiseBurst(ctx, time, 0.14, 1800, gain * 0.35);
+    const skinAmt = clamp(this.mix.skin, 0, 1);
+    this.noiseBurst(
+      ctx,
+      time,
+      lerp(0.2, 0.1, skinAmt),
+      lerp(1200, 2600, skinAmt),
+      gain * lerp(0.22, 0.42, skinAmt),
+    );
 
     const body = ctx.createOscillator();
     const amp = ctx.createGain();
     body.type = "triangle";
-    body.frequency.setValueAtTime(188, time);
-    body.frequency.exponentialRampToValueAtTime(120, time + 0.08);
+    body.frequency.setValueAtTime(lerp(148, 228, skinAmt), time);
+    body.frequency.exponentialRampToValueAtTime(
+      lerp(88, 148, skinAmt),
+      time + lerp(0.12, 0.055, skinAmt),
+    );
     amp.gain.setValueAtTime(gain * 0.28, time);
-    amp.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+    amp.gain.exponentialRampToValueAtTime(0.001, time + lerp(0.18, 0.09, skinAmt));
     body.connect(amp);
     amp.connect(this.filter);
     body.start(time);
-    body.stop(time + 0.14);
+    body.stop(time + lerp(0.2, 0.11, skinAmt));
   }
 
   private duckBed(time: number): void {
