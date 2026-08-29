@@ -138,7 +138,7 @@ export function MixPanel({
           className="pointer-events-auto min-h-11 whitespace-nowrap rounded-full border border-[#f4efe6]/15 bg-[#0b0907]/75 px-5 font-mono text-[12px] tracking-[0.16em] text-[#f4efe6]/85 uppercase backdrop-blur-sm"
           aria-expanded={open}
         >
-          {open ? "Close mix" : `Mix \u00b7 ${mixChipLabel(mix)}`}
+          {open ? "Close mix" : `Mix · ${mixChipLabel(mix)}`}
         </button>
 
         {open ? (
@@ -226,7 +226,7 @@ export function MixPanel({
                     >
                       <span>
                         {group.label}
-                        {hidden ? ` \u00b7 ${foldHint(group.label, mix)}` : ""}
+                        {hidden ? ` · ${foldHint(group.label, mix)}` : ""}
                       </span>
                       <span>{hidden ? "show" : "hide"}</span>
                     </button>
@@ -241,8 +241,8 @@ export function MixPanel({
                                   {slider.label}
                                   {hear && key === "hush"
                                     ? hear.walking
-                                      ? " \u00b7 walking"
-                                      : " \u00b7 still"
+                                      ? " · walking"
+                                      : " · still"
                                     : ""}
                                 </span>
                                 <span>{Math.round((mix[key] / slider.max) * 100)}</span>
@@ -336,7 +336,7 @@ export function MixPanel({
                       className="size-8 rounded-full border border-[#f4efe6]/20 font-mono text-[14px] text-[#f4efe6]/70"
                       aria-label="Slower"
                     >
-                      \u2212
+                      −
                     </button>
                     <span className="w-10 text-center font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
                       {Math.round(mix.bpm)}
@@ -412,7 +412,7 @@ export function MixPanel({
 
 function foldHint(label: string, mix: MixSettings): string {
   if (label === "Voice") return `hold ${Math.round(mix.hold * 100)}`;
-  if (label === "Move") return `bounce ${Math.round(mix.bounce * 100)} \u00b7 hang ${Math.round(mix.hang * 100)}`;
+  if (label === "Move") return `bounce ${Math.round(mix.bounce * 100)} · hang ${Math.round(mix.hang * 100)}`;
   if (label === "Color") return `space ${Math.round(mix.space * 100)}`;
   if (label === "Sound") return `drive ${Math.round(mix.drive * 100)}`;
   return "more";
