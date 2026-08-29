@@ -65,6 +65,7 @@ export type MixSettings = {
   punch: number;
   skin: number;
   snare: number;
+  hats: number;
   width: number;
   bounce: number;
   hang: number;
@@ -104,6 +105,7 @@ export const MIX_DEFAULTS: MixSettings = {
   punch: 0.45,
   skin: 0.45,
   snare: 0.5,
+  hats: 0.5,
   width: 0.5,
   bounce: 0.45,
   hang: 0.5,
@@ -142,6 +144,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     punch: 0.62,
     skin: 0.62,
     snare: 0.68,
+    hats: 0.72,
     width: 0.62,
     bounce: 0.58,
     hang: 0.45,
@@ -178,6 +181,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     punch: 0.38,
     skin: 0.38,
     snare: 0.48,
+    hats: 0.48,
     width: 0.45,
     bounce: 0.4,
     hang: 0.52,
@@ -215,6 +219,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     punch: 0.18,
     skin: 0.18,
     snare: 0.22,
+    hats: 0.18,
     width: 0.32,
     bounce: 0.28,
     hang: 0.22,
@@ -251,6 +256,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     punch: 0.7,
     skin: 0.7,
     snare: 0.42,
+    hats: 0.38,
     width: 0.22,
     bounce: 0.12,
     hang: 0.78,
@@ -307,6 +313,7 @@ export function parseMix(raw: unknown): MixSettings {
     punch: asNumber(row.punch, MIX_DEFAULTS.punch, 0, 1),
     skin: asNumber(row.skin, MIX_DEFAULTS.skin, 0, 1),
     snare: asNumber(row.snare, MIX_DEFAULTS.snare, 0, 1),
+    hats: asNumber(row.hats, MIX_DEFAULTS.hats, 0, 1),
     width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
     bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
@@ -394,6 +401,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.punch === b.punch &&
     a.skin === b.skin &&
     a.snare === b.snare &&
+    a.hats === b.hats &&
     a.width === b.width &&
     a.bounce === b.bounce &&
     a.hang === b.hang &&
