@@ -37,11 +37,14 @@ export type EngineSnapshot = {
   kickFlash: number;
   snareFlash: number;
   hatFlash: number;
+  clickFlash: number;
   stepFlash: number;
   nodFlash: number;
   turnFlash: number;
   captureFlash: number;
   waveform: Float32Array;
+  brightness: number;
+  drums: number;
   ready: boolean;
 };
 
