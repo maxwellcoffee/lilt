@@ -2,9 +2,11 @@
 
 import {
   MIX_DEFAULTS,
+  MIX_KEYS,
   MIX_PRESETS,
   activePreset,
   mixChipLabel,
+  type MixKeyId,
   type MixPresetId,
   type MixSettings,
 } from "@/lib/mix";
@@ -32,6 +34,7 @@ type SliderKey = keyof Pick<
   | "steer"
   | "chop"
   | "bed"
+  | "space"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
@@ -40,6 +43,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   drums: { label: "Drums", max: 1 },
   density: { label: "Busy", max: 1 },
   echo: { label: "Echo", max: 1 },
+  space: { label: "Space", max: 1 },
   brightness: { label: "Brightness", max: 1 },
   swing: { label: "Swing", max: 0.4 },
   voice: { label: "Voice", max: 1 },
@@ -49,7 +53,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
-  { label: "Sound", keys: ["volume", "bed", "drums", "density", "echo", "brightness", "swing"] },
+  { label: "Sound", keys: ["volume", "bed", "drums", "density", "echo", "space", "brightness", "swing"] },
   { label: "Voice", keys: ["voice", "chop", "sensitivity"] },
   { label: "Move", keys: ["steer"] },
 ];
@@ -138,6 +142,28 @@ export function MixPanel({
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-5">
+              <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
+                Key
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(MIX_KEYS) as MixKeyId[]).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onChange({ ...mix, key: id })}
+                    className={`min-h-9 rounded-full border px-3.5 py-1.5 font-mono text-[11px] tracking-[0.14em] uppercase ${
+                      mix.key === id
+                        ? "border-[#7ec8c4] bg-[#7ec8c4] text-[#0b0907]"
+                        : "border-[#7ec8c4]/35 text-[#7ec8c4]"
+                    }`}
+                  >
+                    {MIX_KEYS[id].label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="mt-5">
