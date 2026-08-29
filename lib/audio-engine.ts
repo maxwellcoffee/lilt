@@ -137,6 +137,9 @@ export class LiltEngine {
     }
     this.sampler?.setSensitivity(mix.sensitivity);
     this.sampler?.setChop(mix.chop);
+    if (ctx && this.bassGain) {
+      this.bassGain.gain.setTargetAtTime(0.06 + mix.bed * 0.22, ctx.currentTime, 0.06);
+    }
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
     }
@@ -538,7 +541,7 @@ export class LiltEngine {
       0.1,
     );
     this.padGain.gain.setTargetAtTime(
-      0.035 + (this.sampler?.voiced ? 0.04 : 0) + Math.abs(motion.head.yaw) * 0.03 * steer,
+      this.mix.bed * (0.03 + (this.sampler?.voiced ? 0.04 : 0) + Math.abs(motion.head.yaw) * 0.03 * steer),
       now,
       0.12,
     );
@@ -625,10 +628,10 @@ export class LiltEngine {
     this.bassGain.gain.cancelScheduledValues(time);
     this.padGain.gain.setValueAtTime(pad, time);
     this.bassGain.gain.setValueAtTime(bass, time);
-    this.padGain.gain.linearRampToValueAtTime(Math.max(0.015, pad * 0.35), time + 0.02);
-    this.bassGain.gain.linearRampToValueAtTime(Math.max(0.04, bass * 0.45), time + 0.02);
-    this.padGain.gain.exponentialRampToValueAtTime(Math.max(0.03, pad), time + 0.18);
-    this.bassGain.gain.exponentialRampToValueAtTime(Math.max(0.08, bass), time + 0.2);
+    this.padGain.gain.linearRampToValueAtTime(Math.max(0.001, pad * 0.35), time + 0.02);
+    this.bassGain.gain.linearRampToValueAtTime(Math.max(0.001, bass * 0.45), time + 0.02);
+    this.padGain.gain.exponentialRampToValueAtTime(Math.max(0.001, pad), time + 0.18);
+    this.bassGain.gain.exponentialRampToValueAtTime(Math.max(0.001, bass), time + 0.2);
   }
 
   private hitHat(time: number, open: boolean, gain: number): void {
