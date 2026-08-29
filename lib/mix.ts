@@ -65,6 +65,7 @@ export type MixSettings = {
   width: number;
   bounce: number;
   hang: number;
+  gap: number;
   key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
@@ -100,6 +101,7 @@ export const MIX_DEFAULTS: MixSettings = {
   width: 0.5,
   bounce: 0.45,
   hang: 0.5,
+  gap: 0.4,
   key: "dorian",
   tempo: "follow",
   bpm: 96,
@@ -134,6 +136,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     width: 0.62,
     bounce: 0.58,
     hang: 0.45,
+    gap: 0.22,
     key: "dorian",
     tempo: "follow",
     bpm: 108,
@@ -166,6 +169,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     width: 0.45,
     bounce: 0.4,
     hang: 0.52,
+    gap: 0.42,
     key: "minor",
     tempo: "follow",
     bpm: 92,
@@ -199,6 +203,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     width: 0.32,
     bounce: 0.28,
     hang: 0.22,
+    gap: 0.55,
     key: "major",
     tempo: "lock",
     bpm: 84,
@@ -231,6 +236,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     width: 0.22,
     bounce: 0.12,
     hang: 0.78,
+    gap: 0.78,
     key: "penta",
     tempo: "follow",
     bpm: 100,
@@ -283,6 +289,7 @@ export function parseMix(raw: unknown): MixSettings {
     width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
     bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
+    gap: asNumber(row.gap, MIX_DEFAULTS.gap, 0, 1),
     key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
@@ -366,6 +373,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.width === b.width &&
     a.bounce === b.bounce &&
     a.hang === b.hang &&
+    a.gap === b.gap &&
     a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
