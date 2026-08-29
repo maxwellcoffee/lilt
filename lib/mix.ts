@@ -189,7 +189,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.density === b.density &&
     a.steer === b.steer &&
     a.chop === b.chop &&
-    a.click === a.click &&
+    a.click === b.click &&
     a.bed === b.bed &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
