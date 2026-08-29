@@ -54,6 +54,7 @@ export type MixSettings = {
   bed: number;
   space: number;
   hall: number;
+  reach: number;
   hush: number;
   thump: number;
   haptic: number;
@@ -86,6 +87,7 @@ export const MIX_DEFAULTS: MixSettings = {
   bed: 0.55,
   space: 0.28,
   hall: 0.32,
+  reach: 0.48,
   hush: 0.2,
   thump: 0.5,
   haptic: 0.55,
@@ -117,6 +119,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     bed: 0.38,
     space: 0.12,
     hall: 0.14,
+    reach: 0.68,
     hush: 0.06,
     thump: 0.45,
     haptic: 0.7,
@@ -146,6 +149,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     bed: 0.72,
     space: 0.44,
     hall: 0.62,
+    reach: 0.48,
     hush: 0.28,
     thump: 0.35,
     haptic: 0.4,
@@ -176,6 +180,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     bed: 0.64,
     space: 0.5,
     hall: 0.55,
+    reach: 0.22,
     hush: 0.48,
     thump: 0.22,
     haptic: 0.2,
@@ -205,6 +210,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     bed: 0.32,
     space: 0.1,
     hall: 0.16,
+    reach: 0.28,
     hush: 0.12,
     thump: 0.82,
     haptic: 0.85,
@@ -254,6 +260,7 @@ export function parseMix(raw: unknown): MixSettings {
     bed: asNumber(row.bed, MIX_DEFAULTS.bed, 0, 1),
     space: asNumber(row.space, MIX_DEFAULTS.space, 0, 1),
     hall: asNumber(row.hall, MIX_DEFAULTS.hall, 0, 1),
+    reach: asNumber(row.reach, MIX_DEFAULTS.reach, 0, 1),
     hush: asNumber(row.hush, MIX_DEFAULTS.hush, 0, 1),
     thump: asNumber(row.thump, MIX_DEFAULTS.thump, 0, 1),
     haptic: asNumber(row.haptic, MIX_DEFAULTS.haptic, 0, 1),
@@ -334,6 +341,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.bed === b.bed &&
     a.space === b.space &&
     a.hall === b.hall &&
+    a.reach === b.reach &&
     a.hush === b.hush &&
     a.thump === b.thump &&
     a.haptic === b.haptic &&
