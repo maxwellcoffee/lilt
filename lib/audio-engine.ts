@@ -13,6 +13,7 @@ type Flash = {
   kick: number;
   snare: number;
   hat: number;
+  click: number;
   step: number;
   nod: number;
   turn: number;
@@ -49,6 +50,7 @@ export class LiltEngine {
     kick: 0,
     snare: 0,
     hat: 0,
+    click: 0,
     step: 0,
     nod: 0,
     turn: 0,
@@ -246,6 +248,7 @@ export class LiltEngine {
       kickFlash: this.flashes.kick,
       snareFlash: this.flashes.snare,
       hatFlash: this.flashes.hat,
+      clickFlash: this.flashes.click,
       stepFlash: this.flashes.step,
       nodFlash: this.flashes.nod,
       turnFlash: this.flashes.turn,
@@ -681,6 +684,7 @@ export class LiltEngine {
   private hitClick(time: number, gain: number, downbeat: boolean): void {
     const ctx = this.ctx;
     if (!ctx) return;
+    this.flashes.click = downbeat ? 1 : 0.55;
     const osc = ctx.createOscillator();
     const amp = ctx.createGain();
     osc.type = "square";
@@ -772,6 +776,7 @@ export class LiltEngine {
     this.flashes.kick *= 0.82;
     this.flashes.snare *= 0.78;
     this.flashes.hat *= 0.7;
+    this.flashes.click *= 0.72;
     this.flashes.step *= 0.84;
     this.flashes.nod *= 0.8;
     this.flashes.turn *= 0.8;
