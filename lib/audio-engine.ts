@@ -482,7 +482,7 @@ export class LiltEngine {
   private scheduler(): void {
     const ctx = this.ctx;
     if (!ctx || !this.running) return;
-    this.bpm = lerp(this.bpm, this.targetBpm, 0.08);
+    this.bpm = lerp(this.bpm, this.targetBpm, lerp(0.24, 0.03, clamp(this.mix.glide, 0, 1)));
     const secondsPer16 = 60 / this.bpm / 4;
     const swing = clamp(
       this.mix.swing + (this.motion?.head.roll ?? 0) * 0.12 * this.mix.steer,
