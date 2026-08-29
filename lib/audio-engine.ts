@@ -789,7 +789,8 @@ export class LiltEngine {
       gain * this.mix.voice * clamp(grain.rms * 8, 0.25, 0.7),
       time + 0.01,
     );
-    amp.gain.exponentialRampToValueAtTime(0.001, time + Math.min(0.55, grain.duration + 0.05));
+    const ring = lerp(0.12, 0.88, clamp(this.mix.tail, 0, 1));
+    amp.gain.exponentialRampToValueAtTime(0.001, time + Math.min(ring, grain.duration + 0.08));
     const pan = ctx.createStereoPanner();
     pan.pan.value = clamp(
       (this.motion?.head.yaw ?? 0) * lerp(0.04, 0.95, this.mix.width),
@@ -800,7 +801,7 @@ export class LiltEngine {
     amp.connect(pan);
     pan.connect(this.filter);
     source.start(time);
-    source.stop(time + grain.duration + 0.05);
+    source.stop(time + Math.max(grain.duration, ring) + 0.04);
   }
 
   private scatterIndex(poolLen: number, beat: number): number {
