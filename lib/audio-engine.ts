@@ -730,7 +730,8 @@ export class LiltEngine {
     const osc = ctx.createOscillator();
     const amp = ctx.createGain();
     osc.type = "sine";
-    const hz = yaw < 0 ? 148 : 220;
+    const deep = clamp(this.mix.deep, 0, 1);
+    const hz = yaw < 0 ? lerp(196, 98, deep) : lerp(280, 148, deep);
     osc.frequency.setValueAtTime(hz, time);
     osc.frequency.exponentialRampToValueAtTime(hz * 0.55, time + 0.18);
     const gain = this.drumLevel(0.28) * lerp(0.08, 1.12, clamp(this.mix.tom, 0, 1));
