@@ -796,8 +796,10 @@ export class LiltEngine {
     const targetMidi = root + 12 + (scale[clamp(index, 0, scale.length - 1)] ?? 7);
     const targetHz = midiToHz(targetMidi + pitch * 4);
     if (grain.f0) {
+      const raw = grain.f0;
       const snapped = midiToHz(quantizeToScale(hzToMidi(grain.f0), scale));
-      return clamp(targetHz / snapped, 0.55, 1.7);
+      const from = lerp(raw, snapped, clamp(this.mix.snap, 0, 1));
+      return clamp(targetHz / from, 0.55, 1.7);
     }
     return clamp(0.85 + pitch * 0.25 + yaw * 0.08, 0.6, 1.5);
   }
