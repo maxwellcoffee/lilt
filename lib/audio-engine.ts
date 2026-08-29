@@ -703,8 +703,9 @@ export class LiltEngine {
     this.bassGain.gain.cancelScheduledValues(time);
     this.padGain.gain.setValueAtTime(pad, time);
     this.bassGain.gain.setValueAtTime(bass, time);
-    this.padGain.gain.linearRampToValueAtTime(Math.max(0.001, pad * 0.35), time + 0.02);
-    this.bassGain.gain.linearRampToValueAtTime(Math.max(0.001, bass * 0.45), time + 0.02);
+    const hole = lerp(0.08, 0.82, clamp(this.mix.duck, 0, 1));
+    this.padGain.gain.linearRampToValueAtTime(Math.max(0.001, pad * (1 - hole)), time + 0.02);
+    this.bassGain.gain.linearRampToValueAtTime(Math.max(0.001, bass * (1 - hole * 0.85)), time + 0.02);
     this.padGain.gain.exponentialRampToValueAtTime(Math.max(0.001, pad), time + 0.18);
     this.bassGain.gain.exponentialRampToValueAtTime(Math.max(0.001, bass), time + 0.2);
   }
