@@ -620,6 +620,7 @@ export class LiltEngine {
     const ctx = this.ctx;
     if (!ctx) return;
     this.flashes.kick = 1;
+    gain *= lerp(0.08, 1.12, clamp(this.mix.kick, 0, 1));
     this.duckBed(time);
 
     const osc = ctx.createOscillator();
