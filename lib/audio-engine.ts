@@ -117,6 +117,7 @@ export class LiltEngine {
 
     this.sampler = new VoiceSampler(ctx.sampleRate);
     this.sampler.setSensitivity(this.mix.sensitivity);
+    this.sampler.setChop(this.mix.chop);
     if (mic) {
       await this.connectMic(ctx, mic);
     }
@@ -135,6 +136,7 @@ export class LiltEngine {
       this.master.gain.setTargetAtTime(mix.volume, ctx.currentTime, 0.04);
     }
     this.sampler?.setSensitivity(mix.sensitivity);
+    this.sampler?.setChop(mix.chop);
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
     }
