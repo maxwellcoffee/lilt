@@ -11,7 +11,7 @@ Walking sets the tempo. Humming or talking is chopped into samples. Nodding, tur
 3. Tap **Begin** and allow microphone. Allow motion when iOS asks. Allow the camera if you want head tracking while the front camera can see your face.
 4. Put the phone in a pocket or hold it. Walk. Hum a phrase. Turn your head.
 
-After that first tap the walk runs itself. Open **Mix** on the start screen or during a walk. Sliders cover volume, voice, drums, how busy the hats get, how strongly head motion steers, how easily hums catch, echo, brightness, swing, and whether tempo follows your gait or stays locked. Street / Room / Soft are starting points. Mix is optional. End walk lives in that same drawer. Press `M` to open Mix. On a laptop, move the pointer to steer and press Space for a step.
+After that first tap the walk runs itself. Open **Mix** on the start screen or during a walk. Sliders cover volume, voice, drums, how busy the hats get, how strongly head motion steers, how easily hums catch, echo, brightness, swing, and whether tempo follows your gait or stays locked. Street / Room / Soft / Pocket are starting points. Pocket is for a phone in a jacket, with head-steer turned down and the mic catching steps. Mix is optional. End walk lives in that same drawer. Press `M` to open Mix. On a laptop, move the pointer to steer and press Space for a step.
 
 | Body | Music |
 | --- | --- |
@@ -43,7 +43,7 @@ npm run dev
 
 The dev server listens on [http://127.0.0.1:43217](http://127.0.0.1:43217).
 
-Use a real device for AirPods and walking. On a laptop, hum into the mic, look at the camera, or move the pointer to steer.
+Use a real device for AirPods and walking. On a laptop, hum into the mic, look at the camera, or move the pointer to steer. On a phone, Add to Home Screen for a full-bleed walk.
 
 ## Stack
 
