@@ -80,6 +80,10 @@ export function LiltApp() {
       if (event.code === "Space" && phase === "playing") {
         event.preventDefault();
         motionRef.current?.registerStep(0.75);
+        return;
+      }
+      if (phase === "playing" && event.key >= "1" && event.key <= "5") {
+        engineRef.current?.previewGrain(Number(event.key) - 1);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -189,7 +193,7 @@ export function LiltApp() {
           lastVibrate = now;
           navigator.vibrate?.(14);
         }
-        if (now - lastHud > 180) {
+        if (now - lastHud > 50) {
           lastHud = now;
           setSnapshot(next);
           setPermissions((current) => ({
@@ -340,7 +344,7 @@ function StartGate({
         </button>
         {error ? (
           <p className="text-sm text-red-300" role="alert">
-            {error} You can still retry — beats will run even if the mic is
+            {error} You can still retry. Beats will run even if the mic is
             blocked.
           </p>
         ) : (
@@ -382,7 +386,13 @@ function PlayingHud({
       </div>
       <div className="text-right font-mono text-[11px] text-[#f4efe6]/50">
         <p>
-          {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "—"}
+          <span
+            style={{
+              color: `rgba(244, 239, 230, ${0.5 + (snapshot?.clickFlash ?? 0) * 0.5})`,
+            }}
+          >
+            {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "–"}
+          </span>
           <span className="mt-0.5 block text-[10px] tracking-[0.14em] text-[#f4efe6]/35 uppercase">
             {tempo === "lock" ? `locked ${Math.round(lockBpm)}` : "follows you"}
           </span>
