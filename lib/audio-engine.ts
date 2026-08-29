@@ -209,23 +209,27 @@ export class LiltEngine {
 
     const now = this.ctx?.currentTime ?? 0;
     const steer = clamp(this.mix.steer, 0, 1);
-    const nodThresh = lerp(3.6, 1.05, steer);
-    const turnThresh = lerp(3.9, 1.15, steer);
-    if (steer > 0.08 && motion.head.pitchVel < -nodThresh && now - this.lastNodAt > 0.2) {
+    const nodAmt = clamp(this.mix.nod, 0, 1);
+    const turnAmt = clamp(this.mix.turn, 0, 1);
+    const wait = lerp(0.08, 0.52, clamp(this.mix.wait, 0, 1));
+    const nodThresh = lerp(3.6, 1.05, nodAmt);
+    const turnThresh = lerp(3.9, 1.15, turnAmt);
+    if (nodAmt > 0.08 && motion.head.pitchVel < -nodThresh && now - this.lastNodAt > wait) {
       this.lastNodAt = now;
       this.flashes.nod = 1;
       this.hitSnare(now, 0.7);
     }
     if (
-      steer > 0.08 &&
+      turnAmt > 0.08 &&
       Math.abs(motion.head.yawVel) > turnThresh &&
-      now - this.lastTurnAt > 0.24
+      now - this.lastTurnAt > wait
     ) {
       this.lastTurnAt = now;
       this.flashes.turn = 1;
       this.hitTom(now, motion.head.yaw);
     }
-    if (motion.stepJustNow && now - this.lastStepScheduled > 0.12) {
+    const stepLag = lerp(0.05, 0.52, clamp(this.mix.lag, 0, 1));
+    if (motion.stepJustNow && now - this.lastStepScheduled > stepLag) {
       this.lastStepScheduled = now;
       this.flashes.step = 1;
       this.hitKick(now, 0.55 + motion.stepIntensity * 0.4);
