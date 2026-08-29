@@ -494,6 +494,13 @@ export class LiltEngine {
         (density > 0.35 && (beat === 2 || beat === 10)) ||
         (density > 0.6 && (beat === 6 || beat === 14)));
 
+    if (
+      this.mix.tempo === "lock" &&
+      this.mix.click > 0 &&
+      beat % 4 === 0
+    ) {
+      this.hitClick(time, this.mix.click * (beat === 0 ? 0.22 : 0.11), beat === 0);
+    }
     if (kick) this.hitKick(time, this.drumLevel(walking ? 0.95 : 0.68));
     if (snare) this.hitSnare(time, this.drumLevel(0.58 + energy * 0.28));
     if (hat) this.hitHat(time, open, this.drumLevel(denseHats ? 0.26 : walking ? 0.18 : 0.13));
@@ -657,6 +664,21 @@ export class LiltEngine {
 
   private drumLevel(gain: number): number {
     return gain * clamp(this.mix.drums, 0, 1);
+  }
+
+  private hitClick(time: number, gain: number, downbeat: boolean): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(downbeat ? 1860 : 1480, time);
+    amp.gain.setValueAtTime(Math.max(0.001, gain), time);
+    amp.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+    osc.connect(amp);
+    amp.connect(this.filter);
+    osc.start(time);
+    osc.stop(time + 0.04);
   }
 
   private hitLatestGrain(time: number, beat: number): void {
