@@ -53,6 +53,7 @@ type SliderKey = keyof Pick<
   | "width"
   | "bounce"
   | "hang"
+  | "gap"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
@@ -81,13 +82,14 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   width: { label: "Width", max: 1 },
   bounce: { label: "Bounce", max: 1 },
   hang: { label: "Hang", max: 1 },
+  gap: { label: "Gap", max: 1 },
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
   { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "punch", "skin", "density"] },
   { label: "Color", keys: ["echo", "space", "hall", "brightness", "reach", "swing", "width"] },
   { label: "Voice", keys: ["voice", "chop", "hold", "snap", "sensitivity", "thump"] },
-  { label: "Move", keys: ["steer", "bounce", "hang", "haptic"] },
+  { label: "Move", keys: ["steer", "bounce", "hang", "gap", "haptic"] },
 ];
 
 export function MixPanel({
