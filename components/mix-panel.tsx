@@ -138,22 +138,40 @@ export function MixPanel({
                 </ModeButton>
               </div>
               {mix.tempo === "lock" ? (
-                <label className="flex min-w-32 flex-1 items-center gap-2">
-                  <span className="font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
-                    {Math.round(mix.bpm)}
-                  </span>
-                  <input
-                    type="range"
-                    min={70}
-                    max={150}
-                    step={1}
-                    value={mix.bpm}
-                    onChange={(event) =>
-                      onChange({ ...mix, bpm: Number(event.target.value) })
-                    }
-                    className="h-8 w-full cursor-pointer accent-[#7ec8c4]"
-                  />
-                </label>
+                <div className="flex min-w-32 flex-1 flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <span className="w-10 font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                      {Math.round(mix.bpm)}
+                    </span>
+                    <input
+                      type="range"
+                      min={70}
+                      max={150}
+                      step={1}
+                      value={mix.bpm}
+                      onChange={(event) =>
+                        onChange({ ...mix, bpm: Number(event.target.value) })
+                      }
+                      className="h-8 w-full cursor-pointer accent-[#7ec8c4]"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <span className="w-10 font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                      Click
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={mix.click}
+                      onChange={(event) =>
+                        onChange({ ...mix, click: Number(event.target.value) })
+                      }
+                      className="h-8 w-full cursor-pointer accent-[#7ec8c4]"
+                    />
+                  </label>
+                </div>
               ) : null}
             </div>
 
