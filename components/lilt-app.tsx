@@ -132,6 +132,27 @@ export function LiltApp() {
 
   useEffect(() => {
     if (phase !== "playing") return;
+    let wake: WakeLockSentinel | null = null;
+    const takeWake = async () => {
+      try {
+        wake = await navigator.wakeLock.request("screen");
+      } catch {
+        wake = null;
+      }
+    };
+    void takeWake();
+    const onVis = () => {
+      if (document.visibilityState === "visible") void takeWake();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      void wake?.release();
+    };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "playing") return;
     const onPointer = (event: PointerEvent) => {
       const motion = motionRef.current;
       if (!motion) return;
@@ -323,9 +344,9 @@ function StartGate({
           </p>
         ) : (
           <p className="text-xs leading-5 text-[#f4efe6]/42">
-            One tap. After that, do not touch the screen. Allow the mic (AirPods
-            when they are connected), motion, and camera if you want head
-            tracking while the phone can see your face.
+            One tap. Allow the mic (AirPods when they are the system input),
+            motion, and camera if you want the face to steer. Pocket mix is for
+            a phone in a jacket. On iPhone, Add to Home Screen.
           </p>
         )}
       </div>
