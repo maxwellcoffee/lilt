@@ -66,6 +66,7 @@ export type MixSettings = {
   drive: number;
   punch: number;
   kick: number;
+  duck: number;
   skin: number;
   snare: number;
   hats: number;
@@ -114,6 +115,7 @@ export const MIX_DEFAULTS: MixSettings = {
   drive: 0.4,
   punch: 0.45,
   kick: 0.55,
+  duck: 0.5,
   skin: 0.45,
   snare: 0.5,
   hats: 0.5,
@@ -161,6 +163,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drive: 0.55,
     punch: 0.62,
     kick: 0.78,
+    duck: 0.68,
     skin: 0.62,
     snare: 0.68,
     hats: 0.72,
@@ -206,6 +209,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drive: 0.28,
     punch: 0.38,
     kick: 0.52,
+    duck: 0.42,
     skin: 0.38,
     snare: 0.48,
     hats: 0.48,
@@ -252,6 +256,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drive: 0.12,
     punch: 0.18,
     kick: 0.22,
+    duck: 0.18,
     skin: 0.18,
     snare: 0.22,
     hats: 0.18,
@@ -297,6 +302,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drive: 0.48,
     punch: 0.7,
     kick: 0.72,
+    duck: 0.55,
     skin: 0.7,
     snare: 0.42,
     hats: 0.38,
@@ -362,6 +368,7 @@ export function parseMix(raw: unknown): MixSettings {
     drive: asNumber(row.drive, MIX_DEFAULTS.drive, 0, 1),
     punch: asNumber(row.punch, MIX_DEFAULTS.punch, 0, 1),
     kick: asNumber(row.kick, MIX_DEFAULTS.kick, 0, 1),
+    duck: asNumber(row.duck, MIX_DEFAULTS.duck, 0, 1),
     skin: asNumber(row.skin, MIX_DEFAULTS.skin, 0, 1),
     snare: asNumber(row.snare, MIX_DEFAULTS.snare, 0, 1),
     hats: asNumber(row.hats, MIX_DEFAULTS.hats, 0, 1),
@@ -458,6 +465,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.drive === b.drive &&
     a.punch === b.punch &&
     a.kick === b.kick &&
+    a.duck === b.duck &&
     a.skin === b.skin &&
     a.snare === b.snare &&
     a.hats === b.hats &&
