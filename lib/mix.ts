@@ -42,6 +42,7 @@ export type MixSettings = {
   voice: number;
   sensitivity: number;
   echo: number;
+  late: number;
   brightness: number;
   swing: number;
   drums: number;
@@ -88,6 +89,7 @@ export const MIX_DEFAULTS: MixSettings = {
   voice: 0.7,
   sensitivity: 0.55,
   echo: 0.35,
+  late: 0.5,
   brightness: 0.55,
   swing: 0.12,
   drums: 0.82,
@@ -134,6 +136,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     voice: 0.75,
     sensitivity: 0.45,
     echo: 0.22,
+    late: 0.22,
     brightness: 0.62,
     swing: 0.08,
     drums: 0.95,
@@ -177,6 +180,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     voice: 0.85,
     sensitivity: 0.7,
     echo: 0.48,
+    late: 0.62,
     brightness: 0.42,
     swing: 0.2,
     drums: 0.7,
@@ -220,6 +224,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     voice: 0.55,
     sensitivity: 0.8,
     echo: 0.55,
+    late: 0.55,
     brightness: 0.32,
     swing: 0.16,
     drums: 0.48,
@@ -264,6 +269,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     voice: 0.62,
     sensitivity: 0.86,
     echo: 0.26,
+    late: 0.28,
     brightness: 0.48,
     swing: 0.1,
     drums: 0.9,
@@ -326,6 +332,7 @@ export function parseMix(raw: unknown): MixSettings {
     voice: asNumber(row.voice, MIX_DEFAULTS.voice, 0, 1),
     sensitivity: asNumber(row.sensitivity, MIX_DEFAULTS.sensitivity, 0, 1),
     echo: asNumber(row.echo, MIX_DEFAULTS.echo, 0, 1),
+    late: asNumber(row.late, MIX_DEFAULTS.late, 0, 1),
     brightness: asNumber(row.brightness, MIX_DEFAULTS.brightness, 0, 1),
     swing: asNumber(row.swing, MIX_DEFAULTS.swing, 0, 0.4),
     drums: asNumber(row.drums, MIX_DEFAULTS.drums, 0, 1),
@@ -420,6 +427,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.voice === b.voice &&
     a.sensitivity === b.sensitivity &&
     a.echo === b.echo &&
+    a.late === b.late &&
     a.brightness === b.brightness &&
     a.swing === b.swing &&
     a.drums === b.drums &&
