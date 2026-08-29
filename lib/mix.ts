@@ -50,6 +50,7 @@ export type MixSettings = {
   steer: number;
   chop: number;
   hold: number;
+  loop: number;
   snap: number;
   scatter: number;
   tail: number;
@@ -100,6 +101,7 @@ export const MIX_DEFAULTS: MixSettings = {
   steer: 0.55,
   chop: 0.42,
   hold: 0.42,
+  loop: 0.4,
   snap: 0.5,
   scatter: 0.4,
   tail: 0.5,
@@ -150,6 +152,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.62,
     chop: 0.58,
     hold: 0.32,
+    loop: 0.16,
     snap: 0.72,
     scatter: 0.62,
     tail: 0.22,
@@ -197,6 +200,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.5,
     chop: 0.35,
     hold: 0.62,
+    loop: 0.38,
     snap: 0.48,
     scatter: 0.45,
     tail: 0.48,
@@ -244,6 +248,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.38,
     chop: 0.22,
     hold: 0.78,
+    loop: 0.52,
     snap: 0.58,
     scatter: 0.18,
     tail: 0.72,
@@ -292,6 +297,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.12,
     chop: 0.48,
     hold: 0.2,
+    loop: 0.22,
     snap: 0.28,
     scatter: 0.78,
     tail: 0.38,
@@ -358,6 +364,7 @@ export function parseMix(raw: unknown): MixSettings {
     steer: asNumber(row.steer, MIX_DEFAULTS.steer, 0, 1),
     chop: asNumber(row.chop, MIX_DEFAULTS.chop, 0, 1),
     hold: asNumber(row.hold, MIX_DEFAULTS.hold, 0, 1),
+    loop: asNumber(row.loop, MIX_DEFAULTS.loop, 0, 1),
     snap: asNumber(row.snap, MIX_DEFAULTS.snap, 0, 1),
     scatter: asNumber(row.scatter, MIX_DEFAULTS.scatter, 0, 1),
     tail: asNumber(row.tail, MIX_DEFAULTS.tail, 0, 1),
@@ -456,6 +463,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.steer === b.steer &&
     a.chop === b.chop &&
     a.hold === b.hold &&
+    a.loop === b.loop &&
     a.snap === b.snap &&
     a.scatter === b.scatter &&
     a.tail === b.tail &&
