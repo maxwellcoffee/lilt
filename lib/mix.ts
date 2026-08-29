@@ -22,6 +22,21 @@ export function mixHarmony(mix: MixSettings): MixHarmony {
   return MIX_KEYS[mix.key] ?? MIX_KEYS.dorian;
 }
 
+export function mixKeyTint(id: MixKeyId): { r: number; g: number; b: number } {
+  switch (id) {
+    case "minor":
+      return { r: 126, g: 160, b: 196 };
+    case "major":
+      return { r: 232, g: 196, b: 140 };
+    case "penta":
+      return { r: 126, g: 200, b: 196 };
+    case "phryg":
+      return { r: 196, g: 120, b: 150 };
+    default:
+      return { r: 232, g: 168, b: 124 };
+  }
+}
+
 export type MixSettings = {
   volume: number;
   voice: number;
@@ -39,6 +54,9 @@ export type MixSettings = {
   hush: number;
   thump: number;
   haptic: number;
+  drive: number;
+  width: number;
+  bounce: number;
   key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
@@ -63,6 +81,9 @@ export const MIX_DEFAULTS: MixSettings = {
   hush: 0.2,
   thump: 0.5,
   haptic: 0.55,
+  drive: 0.4,
+  width: 0.5,
+  bounce: 0.45,
   key: "dorian",
   tempo: "follow",
   bpm: 96,
@@ -86,6 +107,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hush: 0.06,
     thump: 0.45,
     haptic: 0.7,
+    drive: 0.55,
+    width: 0.62,
+    bounce: 0.58,
     key: "dorian",
     tempo: "follow",
     bpm: 108,
@@ -107,6 +131,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hush: 0.28,
     thump: 0.35,
     haptic: 0.4,
+    drive: 0.28,
+    width: 0.45,
+    bounce: 0.4,
     key: "minor",
     tempo: "follow",
     bpm: 92,
@@ -129,6 +156,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hush: 0.48,
     thump: 0.22,
     haptic: 0.2,
+    drive: 0.12,
+    width: 0.32,
+    bounce: 0.28,
     key: "major",
     tempo: "lock",
     bpm: 84,
@@ -150,6 +180,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hush: 0.12,
     thump: 0.82,
     haptic: 0.85,
+    drive: 0.48,
+    width: 0.22,
+    bounce: 0.12,
     key: "penta",
     tempo: "follow",
     bpm: 100,
@@ -191,6 +224,9 @@ export function parseMix(raw: unknown): MixSettings {
     hush: asNumber(row.hush, MIX_DEFAULTS.hush, 0, 1),
     thump: asNumber(row.thump, MIX_DEFAULTS.thump, 0, 1),
     haptic: asNumber(row.haptic, MIX_DEFAULTS.haptic, 0, 1),
+    drive: asNumber(row.drive, MIX_DEFAULTS.drive, 0, 1),
+    width: asNumber(row.width, MIX_DEFAULTS.width, 0, 1),
+    bounce: asNumber(row.bounce, MIX_DEFAULTS.bounce, 0, 1),
     key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
@@ -263,6 +299,9 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.hush === b.hush &&
     a.thump === b.thump &&
     a.haptic === b.haptic &&
+    a.drive === b.drive &&
+    a.width === b.width &&
+    a.bounce === b.bounce &&
     a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
