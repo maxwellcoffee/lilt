@@ -273,6 +273,14 @@ export class LiltEngine {
       window.clearInterval(this.timer);
       this.timer = null;
     }
+    const ctx = this.ctx;
+    if (ctx && this.master) {
+      const now = ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(Math.max(0.0001, this.master.gain.value), now);
+      this.master.gain.linearRampToValueAtTime(0.0001, now + 0.22);
+      await new Promise((resolve) => window.setTimeout(resolve, 240));
+    }
     this.loopSources.forEach((node) => {
       try {
         node.stop();
