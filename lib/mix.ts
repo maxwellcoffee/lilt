@@ -56,6 +56,7 @@ export type MixSettings = {
   space: number;
   hall: number;
   reach: number;
+  bite: number;
   hush: number;
   thump: number;
   haptic: number;
@@ -92,6 +93,7 @@ export const MIX_DEFAULTS: MixSettings = {
   space: 0.28,
   hall: 0.32,
   reach: 0.48,
+  bite: 0.42,
   hush: 0.2,
   thump: 0.5,
   haptic: 0.55,
@@ -127,6 +129,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     space: 0.12,
     hall: 0.14,
     reach: 0.68,
+    bite: 0.72,
     hush: 0.06,
     thump: 0.45,
     haptic: 0.7,
@@ -160,6 +163,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     space: 0.44,
     hall: 0.62,
     reach: 0.48,
+    bite: 0.48,
     hush: 0.28,
     thump: 0.35,
     haptic: 0.4,
@@ -194,6 +198,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     space: 0.5,
     hall: 0.55,
     reach: 0.22,
+    bite: 0.18,
     hush: 0.48,
     thump: 0.22,
     haptic: 0.2,
@@ -227,6 +232,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     space: 0.1,
     hall: 0.16,
     reach: 0.28,
+    bite: 0.38,
     hush: 0.12,
     thump: 0.82,
     haptic: 0.85,
@@ -280,6 +286,7 @@ export function parseMix(raw: unknown): MixSettings {
     space: asNumber(row.space, MIX_DEFAULTS.space, 0, 1),
     hall: asNumber(row.hall, MIX_DEFAULTS.hall, 0, 1),
     reach: asNumber(row.reach, MIX_DEFAULTS.reach, 0, 1),
+    bite: asNumber(row.bite, MIX_DEFAULTS.bite, 0, 1),
     hush: asNumber(row.hush, MIX_DEFAULTS.hush, 0, 1),
     thump: asNumber(row.thump, MIX_DEFAULTS.thump, 0, 1),
     haptic: asNumber(row.haptic, MIX_DEFAULTS.haptic, 0, 1),
@@ -331,7 +338,7 @@ export function getLiveMix(): MixSettings {
   return live;
 }
 
-export function writeMix(next: MixSettings): MixSettings {
+export function writeMix(next: MixSettings): void {
   const parsed = parseMix(next);
   if (live && !mixEquals(live, parsed)) prior = live;
   live = parsed;
@@ -364,6 +371,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.space === b.space &&
     a.hall === b.hall &&
     a.reach === b.reach &&
+    a.bite === b.bite &&
     a.hush === b.hush &&
     a.thump === b.thump &&
     a.haptic === b.haptic &&
