@@ -36,6 +36,9 @@ export type MixSettings = {
   click: number;
   bed: number;
   space: number;
+  hush: number;
+  thump: number;
+  haptic: number;
   key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
@@ -57,6 +60,9 @@ export const MIX_DEFAULTS: MixSettings = {
   click: 0,
   bed: 0.55,
   space: 0.28,
+  hush: 0.2,
+  thump: 0.5,
+  haptic: 0.55,
   key: "dorian",
   tempo: "follow",
   bpm: 96,
@@ -77,6 +83,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     chop: 0.58,
     bed: 0.38,
     space: 0.12,
+    hush: 0.06,
+    thump: 0.45,
+    haptic: 0.7,
     key: "dorian",
     tempo: "follow",
     bpm: 108,
@@ -95,6 +104,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     chop: 0.35,
     bed: 0.72,
     space: 0.44,
+    hush: 0.28,
+    thump: 0.35,
+    haptic: 0.4,
     key: "minor",
     tempo: "follow",
     bpm: 92,
@@ -114,6 +126,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     click: 0.28,
     bed: 0.64,
     space: 0.5,
+    hush: 0.48,
+    thump: 0.22,
+    haptic: 0.2,
     key: "major",
     tempo: "lock",
     bpm: 84,
@@ -132,6 +147,9 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     chop: 0.48,
     bed: 0.32,
     space: 0.1,
+    hush: 0.12,
+    thump: 0.82,
+    haptic: 0.85,
     key: "penta",
     tempo: "follow",
     bpm: 100,
@@ -141,6 +159,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
 const STORAGE_KEY = "lilt-mix-v1";
 const listeners = new Set<() => void>();
 let live: MixSettings | null = null;
+let prior: MixSettings | null = null;
 
 function asNumber(value: unknown, fallback: number, min: number, max: number): number {
   const n = typeof value === "number" ? value : Number(value);
@@ -169,6 +188,9 @@ export function parseMix(raw: unknown): MixSettings {
     click: asNumber(row.click, MIX_DEFAULTS.click, 0, 1),
     bed: asNumber(row.bed, MIX_DEFAULTS.bed, 0, 1),
     space: asNumber(row.space, MIX_DEFAULTS.space, 0, 1),
+    hush: asNumber(row.hush, MIX_DEFAULTS.hush, 0, 1),
+    thump: asNumber(row.thump, MIX_DEFAULTS.thump, 0, 1),
+    haptic: asNumber(row.haptic, MIX_DEFAULTS.haptic, 0, 1),
     key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
@@ -211,10 +233,16 @@ export function getLiveMix(): MixSettings {
 }
 
 export function writeMix(next: MixSettings): MixSettings {
-  live = parseMix(next);
+  const parsed = parseMix(next);
+  if (live && !mixEquals(live, parsed)) prior = live;
+  live = parsed;
   saveMix(live);
   listeners.forEach((fn) => fn());
   return live;
+}
+
+export function peekUndoMix(): MixSettings | null {
+  return prior ? { ...prior } : null;
 }
 
 export function mixEquals(a: MixSettings, b: MixSettings): boolean {
@@ -232,6 +260,9 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.click === b.click &&
     a.bed === b.bed &&
     a.space === b.space &&
+    a.hush === b.hush &&
+    a.thump === b.thump &&
+    a.haptic === b.haptic &&
     a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm

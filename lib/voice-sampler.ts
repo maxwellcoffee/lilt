@@ -27,6 +27,7 @@ export class VoiceSampler {
   private footstep = false;
   private sensitivity = 0.55;
   private chop = 0.42;
+  private thump = 0.5;
   readonly grains: CapturedGrain[] = [];
   private readonly maxGrains = 5;
 
@@ -56,6 +57,10 @@ export class VoiceSampler {
 
   setChop(value: number): void {
     this.chop = Math.min(1, Math.max(0, value));
+  }
+
+  setThump(value: number): void {
+    this.thump = Math.min(1, Math.max(0, value));
   }
 
   clear(): void {
@@ -89,14 +94,17 @@ export class VoiceSampler {
     const open = Math.max(this.noiseFloor * openMul, 0.0035);
     const close = Math.max(this.noiseFloor * (openMul * 0.5), 0.0025);
     const voicedLike = zcr > 0.02 && zcr < 0.28;
-    const stepFloor = Math.max(this.noiseFloor * 2.8, 0.008);
+    const stepFloor = Math.max(
+      this.noiseFloor * lerp(4.4, 1.6, this.thump),
+      lerp(0.016, 0.004, this.thump),
+    );
 
     if (
       !this.speaking &&
       !voicedLike &&
       this.lastRms > stepFloor &&
       this.lastRms < open * 0.85 &&
-      now - this.lastFootstepAt > 0.32
+      now - this.lastFootstepAt > lerp(0.42, 0.24, this.thump)
     ) {
       this.lastFootstepAt = now;
       this.footstep = true;

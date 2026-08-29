@@ -11,7 +11,7 @@ Walking sets the tempo. Humming or talking is chopped into samples. Nodding, tur
 3. Tap **Begin** and allow microphone. Allow motion when iOS asks. Allow the camera if you want head tracking while the front camera can see your face.
 4. Put the phone in a pocket or hold it. Walk. Hum a phrase. Turn your head.
 
-After that first tap the walk runs itself. Open **Mix** on the start screen or during a walk. Sliders cover volume, the pad bed, voice, drums, how busy the hats get, how strongly head motion steers, how short hums get chopped, how easily hums catch, echo, hall space, brightness, swing, and whether tempo follows your gait or stays locked. Key chips pick the harmony the bass and grains snap to. Mix is grouped into Sound, Voice, Move, Key, and Tempo. Street / Room / Soft / Pocket are starting points. Pocket is for a phone in a jacket, with head-steer turned down and the mic catching steps. Mix is optional. End walk lives in that same drawer. Press `M` to open Mix. On a laptop, move the pointer to steer and press Space for a step. Lit sample dots in the HUD play that grain when you tap them. Keys 1 through 5 do the same. When tempo is locked, the BPM figure pulses with the click. Locking tempo shows a Click slider so you can hear the grid without walking.
+After that first tap the walk runs itself. Open **Mix** on the start screen or during a walk. Sliders cover volume, the pad bed, voice, drums, how busy the hats get, how strongly head motion steers, how short hums get chopped, how easily hums catch, echo, hall space, brightness, swing, and whether tempo follows your gait or stays locked. Key chips pick the harmony the bass and grains snap to. Hush ducks the drums when you stand still. Thump sets how easily the mic hears footsteps. Pulse is the phone buzz on the kick. Mix is grouped into Sound, Voice, Move, Key, and Tempo. Street / Room / Soft / Pocket are starting points. Pocket is for a phone in a jacket, with head-steer turned down and the mic catching steps. Mix is optional. End walk lives in that same drawer. Press `M` to open Mix. `Z` undoes the last Mix change. On a laptop, move the pointer to steer and press Space for a step. Lit sample dots in the HUD play that grain when you tap them. Keys 1 through 5 do the same. When tempo is locked, the BPM figure pulses with the click. Locking tempo shows a Click slider so you can hear the grid without walking.
 
 | Body | Music |
 | --- | --- |
@@ -38,10 +38,11 @@ Phone-in-pocket walking still works. Head-steering is strongest when the camera 
 
 ```bash
 npm install
-npm run dev
+npm run build
+npm start
 ```
 
-The dev server listens on [http://127.0.0.1:43217](http://127.0.0.1:43217).
+The production server listens on [http://127.0.0.1:43217](http://127.0.0.1:43217). `next dev` is fine on a laptop. Use the production build if a preview proxy is in front of the app.
 
 Use a real device for AirPods and walking. On a laptop, hum into the mic, look at the camera, or move the pointer to steer. On a phone, Add to Home Screen for a full-bleed walk.
 
