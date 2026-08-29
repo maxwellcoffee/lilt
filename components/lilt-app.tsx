@@ -348,11 +348,16 @@ function StartGate({
             blocked.
           </p>
         ) : (
-          <p className="text-xs leading-5 text-[#f4efe6]/42">
-            One tap. Allow the mic (AirPods when they are the system input),
-            motion, and camera if you want the face to steer. Pocket mix is for
-            a phone in a jacket. On iPhone, Add to Home Screen.
-          </p>
+          <>
+            <p className="text-xs leading-5 text-[#f4efe6]/42">
+              One tap. Allow the mic (AirPods when they are the system input),
+              motion, and camera if you want the face to steer. Pocket mix is for
+              a phone in a jacket. On iPhone, Add to Home Screen.
+            </p>
+            <p className="hidden text-xs leading-5 text-[#f4efe6]/32 sm:block">
+              M opens Mix. Space is a step. Keys 1 to 5 play grains.
+            </p>
+          </>
         )}
       </div>
     </main>
@@ -395,6 +400,7 @@ function PlayingHud({
           </span>
           <span className="mt-0.5 block text-[10px] tracking-[0.14em] text-[#f4efe6]/35 uppercase">
             {tempo === "lock" ? `locked ${Math.round(lockBpm)}` : "follows you"}
+            {snapshot?.keyLabel ? ` · ${snapshot.keyLabel}` : ""}
           </span>
         </p>
         <p className="mt-2 flex justify-end gap-1.5" aria-label="Captured samples">
