@@ -78,9 +78,10 @@ export function VisualField({ snapshotRef, video, hasCamera }: VisualFieldProps)
         if (barsRef.current.length > 22) barsRef.current.shift();
       }
 
+      const warm = state?.brightness ?? 0.55;
       const sky = ctx.createLinearGradient(0, 0, 0, height);
-      sky.addColorStop(0, "#120e14");
-      sky.addColorStop(0.42, "#1a1210");
+      sky.addColorStop(0, `rgb(${16 + warm * 22}, ${12 + warm * 6}, ${20 - warm * 6})`);
+      sky.addColorStop(0.42, `rgb(${24 + warm * 18}, ${16 + warm * 8}, ${14})`);
       sky.addColorStop(1, "#0b0907");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, width, height);
@@ -111,7 +112,17 @@ export function VisualField({ snapshotRef, video, hasCamera }: VisualFieldProps)
       const vanishingY = height * 0.34 + pitch * height * 0.14;
 
       drawRoad(ctx, width, height, vanishingX, vanishingY, barsRef.current, now);
-      drawLamps(ctx, width, height, vanishingX, vanishingY, kick, snare);
+      drawLamps(
+        ctx,
+        width,
+        height,
+        vanishingX,
+        vanishingY,
+        kick,
+        snare,
+        state?.clickFlash ?? 0,
+        state?.drums ?? 0.82,
+      );
       if (state) {
         drawVoiceRibbon(ctx, width, height, vanishingX, vanishingY, state);
         drawSampleOrbs(ctx, vanishingX, vanishingY, state);
@@ -213,6 +224,8 @@ function drawLamps(
   vy: number,
   kick: number,
   snare: number,
+  click: number,
+  drums: number,
 ) {
   const rows = 7;
   for (let i = 1; i <= rows; i++) {
@@ -220,7 +233,9 @@ function drawLamps(
     const y = vy + (height - vy) * t;
     const half = roadWidth(y, height, vy, width) / 2 + 20;
     const size = 2 + t * 6;
-    const pulse = 0.2 + kick * 0.5 + (i % 2 === 0 ? snare * 0.4 : 0);
+    const pulse =
+      (0.2 + kick * 0.5 + click * 0.35 + (i % 2 === 0 ? snare * 0.4 : 0)) *
+      (0.35 + drums * 0.65);
     ctx.fillStyle = `rgba(255, 214, 160, ${pulse})`;
     ctx.shadowColor = "rgba(255, 196, 120, 0.6)";
     ctx.shadowBlur = 8 + kick * 12;

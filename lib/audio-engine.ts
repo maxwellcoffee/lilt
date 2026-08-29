@@ -76,7 +76,8 @@ export class LiltEngine {
     await ctx.resume();
 
     this.master = ctx.createGain();
-    this.master.gain.value = this.mix.volume;
+    this.master.gain.setValueAtTime(0.0001, ctx.currentTime);
+    this.master.gain.linearRampToValueAtTime(this.mix.volume, ctx.currentTime + 0.9);
 
     this.compressor = ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
@@ -135,7 +136,13 @@ export class LiltEngine {
     this.mix = mix;
     const ctx = this.ctx;
     if (ctx && this.master) {
-      this.master.gain.setTargetAtTime(mix.volume, ctx.currentTime, 0.04);
+      const fadeEnds = this.startedAt + 0.9;
+      if (ctx.currentTime < fadeEnds) {
+        this.master.gain.cancelScheduledValues(ctx.currentTime);
+        this.master.gain.linearRampToValueAtTime(mix.volume, fadeEnds);
+      } else {
+        this.master.gain.setTargetAtTime(mix.volume, ctx.currentTime, 0.04);
+      }
     }
     this.sampler?.setSensitivity(mix.sensitivity);
     this.sampler?.setChop(mix.chop);
