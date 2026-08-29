@@ -26,6 +26,8 @@ export class LiltEngine {
   private delay!: DelayNode;
   private delayGain!: GainNode;
   private reverbWet!: GainNode;
+  private convolver: ConvolverNode | null = null;
+  private lastHall = Number.NaN;
   private filter!: BiquadFilterNode;
   private bassOsc!: OscillatorNode;
   private bassGain!: GainNode;
@@ -158,6 +160,9 @@ export class LiltEngine {
     }
     if (ctx && this.reverbWet) {
       this.reverbWet.gain.setTargetAtTime(mix.space * 0.42, ctx.currentTime, 0.08);
+    }
+    if (ctx && this.convolver && mix.hall !== this.lastHall) {
+      this.writeImpulse(ctx);
     }
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
@@ -359,8 +364,19 @@ export class LiltEngine {
   }
 
   private connectReverb(ctx: AudioContext): void {
-    const seconds = 1.6;
-    const length = Math.floor(ctx.sampleRate * seconds);
+    this.convolver = ctx.createConvolver();
+    this.reverbWet = ctx.createGain();
+    this.reverbWet.gain.value = this.mix.space * 0.42;
+    this.filter.connect(this.convolver);
+    this.convolver.connect(this.reverbWet);
+    this.reverbWet.connect(this.compressor);
+    this.writeImpulse(ctx);
+  }
+
+  private writeImpulse(ctx: AudioContext): void {
+    if (!this.convolver) return;
+    const seconds = lerp(0.55, 2.8, clamp(this.mix.hall, 0, 1));
+    const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
     const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const data = impulse.getChannelData(ch);
@@ -369,13 +385,8 @@ export class LiltEngine {
         data[i] = (Math.random() * 2 - 1) * decay * 0.35;
       }
     }
-    const convolver = ctx.createConvolver();
-    convolver.buffer = impulse;
-    this.reverbWet = ctx.createGain();
-    this.reverbWet.gain.value = this.mix.space * 0.42;
-    this.filter.connect(convolver);
-    convolver.connect(this.reverbWet);
-    this.reverbWet.connect(this.compressor);
+    this.convolver.buffer = impulse;
+    this.lastHall = this.mix.hall;
   }
 
   private async connectMic(ctx: AudioContext, mic: MediaStream): Promise<void> {
