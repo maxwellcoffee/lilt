@@ -72,6 +72,7 @@ export type MixSettings = {
   hang: number;
   gap: number;
   lag: number;
+  nod: number;
   key: MixKeyId;
   tempo: TempoMode;
   bpm: number;
@@ -114,6 +115,7 @@ export const MIX_DEFAULTS: MixSettings = {
   hang: 0.5,
   gap: 0.4,
   lag: 0.4,
+  nod: 0.5,
   key: "dorian",
   tempo: "follow",
   bpm: 96,
@@ -155,6 +157,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hang: 0.45,
     gap: 0.22,
     lag: 0.16,
+    nod: 0.68,
     key: "dorian",
     tempo: "follow",
     bpm: 108,
@@ -194,6 +197,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hang: 0.52,
     gap: 0.42,
     lag: 0.42,
+    nod: 0.48,
     key: "minor",
     tempo: "follow",
     bpm: 92,
@@ -234,6 +238,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hang: 0.22,
     gap: 0.55,
     lag: 0.72,
+    nod: 0.28,
     key: "major",
     tempo: "lock",
     bpm: 84,
@@ -273,6 +278,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     hang: 0.78,
     gap: 0.78,
     lag: 0.48,
+    nod: 0.42,
     key: "penta",
     tempo: "follow",
     bpm: 100,
@@ -332,6 +338,7 @@ export function parseMix(raw: unknown): MixSettings {
     hang: asNumber(row.hang, MIX_DEFAULTS.hang, 0, 1),
     gap: asNumber(row.gap, MIX_DEFAULTS.gap, 0, 1),
     lag: asNumber(row.lag, MIX_DEFAULTS.lag, 0, 1),
+    nod: asNumber(row.nod, MIX_DEFAULTS.nod, 0, 1),
     key: parseKey(row.key),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
@@ -422,6 +429,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.hang === b.hang &&
     a.gap === b.gap &&
     a.lag === b.lag &&
+    a.nod === b.nod &&
     a.key === b.key &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
