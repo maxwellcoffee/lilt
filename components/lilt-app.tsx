@@ -7,11 +7,14 @@ import { VisualField } from "@/components/visual-field";
 import { LiltEngine } from "@/lib/audio-engine";
 import { HeadCamera } from "@/lib/head-camera";
 import {
+  MIX_PRESETS,
+  activePreset,
   getLiveMix,
   getServerMix,
   peekUndoMix,
   subscribeMix,
   writeMix,
+  type MixPresetId,
   type MixSettings,
 } from "@/lib/mix";
 import { MotionRig } from "@/lib/sensors";
@@ -83,6 +86,18 @@ export function LiltApp() {
       if ((event.key === "z" || event.key === "Z") && !event.metaKey && !event.ctrlKey) {
         const previous = peekUndoMix();
         if (previous) applyMix(previous);
+        return;
+      }
+      if (event.key === "," || event.key === ".") {
+        const ids = Object.keys(MIX_PRESETS) as MixPresetId[];
+        const current = activePreset(getLiveMix());
+        const index = current ? ids.indexOf(current) : -1;
+        const nextIndex =
+          event.key === "."
+            ? (index + 1 + ids.length) % ids.length
+            : (index - 1 + ids.length) % ids.length;
+        const next = ids[nextIndex];
+        if (next) applyMix({ ...MIX_PRESETS[next] });
         return;
       }
       if ((event.key === "[" || event.key === "]") && getLiveMix().tempo === "lock") {
@@ -381,7 +396,7 @@ function StartGate({
             </p>
             <p className="hidden text-xs leading-5 text-[#f4efe6]/32 sm:block">
               M opens Mix. Space is a step. Keys 1 to 5 play grains. Z undoes Mix.
-              [ and ] nudge a locked BPM.
+              [ and ] nudge a locked BPM. Comma and period cycle presets.
             </p>
           </>
         )}
