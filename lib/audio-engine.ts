@@ -569,10 +569,11 @@ export class LiltEngine {
     if (!ctx) return;
     const now = ctx.currentTime;
     const steer = clamp(this.mix.steer, 0, 1);
+    const reach = lerp(220, 1680, clamp(this.mix.reach, 0, 1));
     const cutoff =
       400 +
       this.mix.brightness * 2200 +
-      (motion.head.yaw + 1) * 900 * steer +
+      (motion.head.yaw + 1) * reach * steer +
       motion.accelEnergy * 300;
     this.filter.frequency.setTargetAtTime(clamp(cutoff, 280, 6200), now, 0.08);
     const delayTime = clamp(
