@@ -47,6 +47,7 @@ type SliderKey = keyof Pick<
   | "drive"
   | "width"
   | "bounce"
+  | "hang"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
@@ -69,13 +70,14 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   drive: { label: "Drive", max: 1 },
   width: { label: "Width", max: 1 },
   bounce: { label: "Bounce", max: 1 },
+  hang: { label: "Hang", max: 1 },
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
   { label: "Sound", keys: ["volume", "drums", "hush", "bed", "drive", "density"] },
   { label: "Color", keys: ["echo", "space", "brightness", "swing", "width"] },
   { label: "Voice", keys: ["voice", "chop", "hold", "sensitivity", "thump"] },
-  { label: "Move", keys: ["steer", "bounce", "haptic"] },
+  { label: "Move", keys: ["steer", "bounce", "hang", "haptic"] },
 ];
 
 export function MixPanel({
@@ -187,7 +189,10 @@ export function MixPanel({
                       className="mb-2 flex w-full items-center justify-between font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase"
                       aria-expanded={!hidden}
                     >
-                      <span>{group.label}</span>
+                      <span>
+                        {group.label}
+                        {hidden ? ` · ${foldHint(group.label, mix)}` : ""}
+                      </span>
                       <span>{hidden ? "show" : "hide"}</span>
                     </button>
                     {hidden ? null : (
@@ -263,7 +268,29 @@ export function MixPanel({
                   Lock
                 </ModeButton>
               </div>
-              {mix.tempo === "lock" ? (
+              {mix.tempo === "follow" ? (
+                <div className="flex min-w-32 flex-1 flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <span className="w-10 font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50 uppercase">
+                      Glide
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={mix.glide}
+                      onChange={(event) =>
+                        onChange({ ...mix, glide: Number(event.target.value) })
+                      }
+                      className="h-8 w-full cursor-pointer accent-[#7ec8c4]"
+                    />
+                    <span className="w-8 text-right font-mono text-[10px] tracking-[0.16em] text-[#f4efe6]/50">
+                      {Math.round(mix.glide * 100)}
+                    </span>
+                  </label>
+                </div>
+              ) : mix.tempo === "lock" ? (
                 <div className="flex min-w-32 flex-1 flex-col gap-2">
                   <label className="flex items-center gap-2">
                     <button
@@ -346,6 +373,14 @@ export function MixPanel({
       </div>
     </div>
   );
+}
+
+function foldHint(label: string, mix: MixSettings): string {
+  if (label === "Voice") return `hold ${Math.round(mix.hold * 100)}`;
+  if (label === "Move") return `bounce ${Math.round(mix.bounce * 100)} · hang ${Math.round(mix.hang * 100)}`;
+  if (label === "Color") return `space ${Math.round(mix.space * 100)}`;
+  if (label === "Sound") return `drive ${Math.round(mix.drive * 100)}`;
+  return "more";
 }
 
 function ModeButton({
