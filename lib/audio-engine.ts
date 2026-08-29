@@ -140,6 +140,18 @@ export class LiltEngine {
     }
   }
 
+  clearGrains(): void {
+    this.loopSources.forEach((node) => {
+      try {
+        node.stop();
+      } catch {
+        // already stopped
+      }
+    });
+    this.loopSources.clear();
+    this.sampler?.clear();
+  }
+
   setStepListener(listener: ((intensity: number) => void) | null): void {
     this.onHeardStep = listener;
   }
@@ -155,12 +167,19 @@ export class LiltEngine {
     }
 
     const now = this.ctx?.currentTime ?? 0;
-    if (motion.head.pitchVel < -1.6 && now - this.lastNodAt > 0.2) {
+    const steer = clamp(this.mix.steer, 0, 1);
+    const nodThresh = lerp(3.6, 1.05, steer);
+    const turnThresh = lerp(3.9, 1.15, steer);
+    if (steer > 0.08 && motion.head.pitchVel < -nodThresh && now - this.lastNodAt > 0.2) {
       this.lastNodAt = now;
       this.flashes.nod = 1;
       this.hitSnare(now, 0.7);
     }
-    if (Math.abs(motion.head.yawVel) > 1.8 && now - this.lastTurnAt > 0.24) {
+    if (
+      steer > 0.08 &&
+      Math.abs(motion.head.yawVel) > turnThresh &&
+      now - this.lastTurnAt > 0.24
+    ) {
       this.lastTurnAt = now;
       this.flashes.turn = 1;
       this.hitTom(now, motion.head.yaw);
@@ -218,6 +237,8 @@ export class LiltEngine {
       turnFlash: this.flashes.turn,
       captureFlash: this.flashes.capture,
       waveform: this.waveform,
+      brightness: this.mix.brightness,
+      drums: this.mix.drums,
       ready: this.running,
     };
   }
@@ -419,7 +440,7 @@ export class LiltEngine {
     this.bpm = lerp(this.bpm, this.targetBpm, 0.08);
     const secondsPer16 = 60 / this.bpm / 4;
     const swing = clamp(
-      this.mix.swing + (this.motion?.head.roll ?? 0) * 0.12,
+      this.mix.swing + (this.motion?.head.roll ?? 0) * 0.12 * this.mix.steer,
       -0.08,
       0.32,
     );
@@ -444,23 +465,37 @@ export class LiltEngine {
     const pitch = motion?.head.pitch ?? 0;
     const denseHats = pitch > 0.2 || energy > 0.45;
 
+    const density = this.mix.density;
     const bar = Math.floor(this.step16 / 16) % 4;
     const kick =
       beat === 0 ||
       beat === 8 ||
-      (walking && (beat === 4 || (energy > 0.22 && beat === 12)));
-    const snare = beat === 4 || beat === 12 || (bar === 3 && beat === 14 && energy > 0.3);
-    const hat = denseHats || walking ? true : beat % 2 === 0;
+      (walking && density > 0.28 && (beat === 4 || (energy > 0.22 && beat === 12))) ||
+      (walking && density > 0.78 && (beat === 6 || beat === 14));
+    const snare =
+      beat === 4 ||
+      beat === 12 ||
+      (density > 0.62 && bar === 3 && beat === 14 && energy > 0.25);
+    const hat =
+      density < 0.18
+        ? beat % 4 === 0
+        : density < 0.55
+          ? beat % 2 === 0 || denseHats || walking
+          : true;
     const open = beat === 14 || (Math.abs(motion?.head.roll ?? 0) > 0.4 && beat === 6);
-    const shaker = walking && beat % 2 === 1;
+    const shaker = walking && density > 0.38 && beat % 2 === 1;
     const grainHit =
       (this.sampler?.grains.length ?? 0) > 0 &&
-      (beat === 2 || beat === 6 || beat === 10 || beat === 14 || beat === 4 || beat === 12);
+      density > 0.12 &&
+      (beat === 4 ||
+        beat === 12 ||
+        (density > 0.35 && (beat === 2 || beat === 10)) ||
+        (density > 0.6 && (beat === 6 || beat === 14)));
 
-    if (kick) this.hitKick(time, walking ? 0.95 : 0.68);
-    if (snare) this.hitSnare(time, 0.58 + energy * 0.28);
-    if (hat) this.hitHat(time, open, denseHats ? 0.26 : walking ? 0.18 : 0.13);
-    if (shaker) this.hitShaker(time, 0.08 + energy * 0.08);
+    if (kick) this.hitKick(time, this.drumLevel(walking ? 0.95 : 0.68));
+    if (snare) this.hitSnare(time, this.drumLevel(0.58 + energy * 0.28));
+    if (hat) this.hitHat(time, open, this.drumLevel(denseHats ? 0.26 : walking ? 0.18 : 0.13));
+    if (shaker) this.hitShaker(time, this.drumLevel(0.08 + energy * 0.08));
     if (grainHit) this.hitLatestGrain(time, beat);
 
     if (beat % 8 === 0) this.moveHarmony(time);
@@ -470,33 +505,38 @@ export class LiltEngine {
     const ctx = this.ctx;
     if (!ctx) return;
     const now = ctx.currentTime;
+    const steer = clamp(this.mix.steer, 0, 1);
     const cutoff =
       400 +
       this.mix.brightness * 2200 +
-      (motion.head.yaw + 1) * 900 +
+      (motion.head.yaw + 1) * 900 * steer +
       motion.accelEnergy * 300;
     this.filter.frequency.setTargetAtTime(clamp(cutoff, 280, 6200), now, 0.08);
-    const delayTime = clamp((60 / this.bpm) * (0.55 + motion.head.roll * 0.2), 0.12, 0.75);
+    const delayTime = clamp(
+      (60 / this.bpm) * (0.55 + motion.head.roll * 0.2 * steer),
+      0.12,
+      0.75,
+    );
     this.delay.delayTime.setTargetAtTime(delayTime, now, 0.12);
     this.delayGain.gain.setTargetAtTime(
-      clamp(this.mix.echo * 0.55 + Math.abs(motion.head.roll) * 0.18, 0.02, 0.5),
+      clamp(this.mix.echo * 0.55 + Math.abs(motion.head.roll) * 0.18 * steer, 0.02, 0.5),
       now,
       0.1,
     );
     this.padFilter.frequency.setTargetAtTime(
-      500 + (motion.head.pitch + 1) * 1400,
+      500 + (motion.head.pitch * steer + 1) * 1400,
       now,
       0.1,
     );
     this.padGain.gain.setTargetAtTime(
-      0.035 + (this.sampler?.voiced ? 0.04 : 0) + Math.abs(motion.head.yaw) * 0.03,
+      0.035 + (this.sampler?.voiced ? 0.04 : 0) + Math.abs(motion.head.yaw) * 0.03 * steer,
       now,
       0.12,
     );
   }
 
   private moveHarmony(time: number): void {
-    const yaw = this.motion?.head.yaw ?? 0;
+    const yaw = (this.motion?.head.yaw ?? 0) * clamp(this.mix.steer, 0, 1);
     const index = Math.round(((yaw + 1) / 2) * (SCALE.length - 1));
     const degree = SCALE[clamp(index, 0, SCALE.length - 1)] ?? 2;
     const bassMidi = ROOT + degree;
@@ -605,12 +645,16 @@ export class LiltEngine {
     const hz = yaw < 0 ? 148 : 220;
     osc.frequency.setValueAtTime(hz, time);
     osc.frequency.exponentialRampToValueAtTime(hz * 0.55, time + 0.18);
-    amp.gain.setValueAtTime(0.28, time);
+    amp.gain.setValueAtTime(this.drumLevel(0.28), time);
     amp.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
     osc.connect(amp);
     amp.connect(this.filter);
     osc.start(time);
     osc.stop(time + 0.24);
+  }
+
+  private drumLevel(gain: number): number {
+    return gain * clamp(this.mix.drums, 0, 1);
   }
 
   private hitLatestGrain(time: number, beat: number): void {
@@ -646,8 +690,9 @@ export class LiltEngine {
   }
 
   private grainRate(grain: CapturedGrain): number {
-    const yaw = this.motion?.head.yaw ?? 0;
-    const pitch = this.motion?.head.pitch ?? 0;
+    const steer = clamp(this.mix.steer, 0, 1);
+    const yaw = (this.motion?.head.yaw ?? 0) * steer;
+    const pitch = (this.motion?.head.pitch ?? 0) * steer;
     const index = Math.round(((yaw + 1) / 2) * (SCALE.length - 1));
     const targetMidi = ROOT + 12 + (SCALE[clamp(index, 0, SCALE.length - 1)] ?? 7);
     const targetHz = midiToHz(targetMidi + pitch * 4);
