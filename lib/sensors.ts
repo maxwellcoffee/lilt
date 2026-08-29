@@ -35,6 +35,7 @@ export class MotionRig {
   private lastFusedAt = 0;
   private bounce = 0.45;
   private hang = 0.5;
+  private gap = 0.4;
   private origin: { alpha: number; beta: number; gamma: number } | null = null;
   private listening = false;
   private onMotion = (event: DeviceMotionEvent) => this.handleMotion(event);
@@ -81,9 +82,13 @@ export class MotionRig {
     this.hang = clamp(value, 0, 1);
   }
 
+  setGap(value: number): void {
+    this.gap = clamp(value, 0, 1);
+  }
+
   registerStep(intensity: number): void {
     const now = performance.now() / 1000;
-    if (now - this.lastStepAt < 0.28) return;
+    if (now - this.lastStepAt < lerp(0.16, 0.52, this.gap)) return;
     if (this.lastStepAt > 0) {
       const interval = now - this.lastStepAt;
       if (interval < 1.4) {
@@ -186,7 +191,7 @@ export class MotionRig {
     this.accelEnergy = this.accelEnergy * 0.85 + Math.abs(dynamic) * 0.15;
     const now = performance.now() / 1000;
     const threshold = lerp(0.72, 0.16, this.bounce);
-    const gap = lerp(0.42, 0.22, this.bounce);
+    const gap = lerp(0.18, 0.58, this.gap);
     if (dynamic > threshold && now - this.lastStepAt > gap) {
       if (this.lastStepAt > 0) {
         const interval = now - this.lastStepAt;
