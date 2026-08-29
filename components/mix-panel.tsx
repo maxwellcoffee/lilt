@@ -106,9 +106,9 @@ export function MixPanel({
             <div className="space-y-5">
               {GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
+                  <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
                     {group.label}
-                  </p>
+                  </h3>
                   <div className="space-y-3">
                     {group.keys.map((key) => {
                       const slider = SLIDERS[key];
@@ -140,7 +140,11 @@ export function MixPanel({
               ))}
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="mt-5">
+              <h3 className="mb-2 font-mono text-[10px] tracking-[0.2em] text-[#e8a87c]/70 uppercase">
+                Tempo
+              </h3>
+              <div className="flex items-center justify-between gap-3">
               <div className="flex rounded-full border border-[#f4efe6]/15 p-0.5">
                 <ModeButton
                   active={mix.tempo === "follow"}
@@ -191,6 +195,7 @@ export function MixPanel({
                   </label>
                 </div>
               ) : null}
+              </div>
             </div>
 
             {onClear && samples > 0 ? (
