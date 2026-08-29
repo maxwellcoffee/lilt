@@ -31,10 +31,12 @@ type SliderKey = keyof Pick<
   | "density"
   | "steer"
   | "chop"
+  | "bed"
 >;
 
 const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
   volume: { label: "Volume", max: 1 },
+  bed: { label: "Bed", max: 1 },
   drums: { label: "Drums", max: 1 },
   density: { label: "Busy", max: 1 },
   echo: { label: "Echo", max: 1 },
@@ -47,7 +49,7 @@ const SLIDERS: Record<SliderKey, { label: string; max: number }> = {
 };
 
 const GROUPS: Array<{ label: string; keys: SliderKey[] }> = [
-  { label: "Sound", keys: ["volume", "drums", "density", "echo", "brightness", "swing"] },
+  { label: "Sound", keys: ["volume", "bed", "drums", "density", "echo", "brightness", "swing"] },
   { label: "Voice", keys: ["voice", "chop", "sensitivity"] },
   { label: "Move", keys: ["steer"] },
 ];
