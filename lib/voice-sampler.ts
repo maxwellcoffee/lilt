@@ -1,4 +1,4 @@
-import { hann, rms } from "@/lib/math";
+import { hann, lerp, rms } from "@/lib/math";
 
 export type CapturedGrain = {
   buffer: AudioBuffer;
@@ -11,8 +11,6 @@ export type CapturedGrain = {
 
 const BUFFER_SECONDS = 2.8;
 const MIN_GRAIN = 0.08;
-const MAX_GRAIN = 0.95;
-const SLICE_WHILE_OPEN = 0.62;
 
 export class VoiceSampler {
   private ring: Float32Array;
@@ -28,6 +26,7 @@ export class VoiceSampler {
   private lastSliceAt = 0;
   private footstep = false;
   private sensitivity = 0.55;
+  private chop = 0.42;
   readonly grains: CapturedGrain[] = [];
   private readonly maxGrains = 5;
 
@@ -53,6 +52,17 @@ export class VoiceSampler {
 
   setSensitivity(value: number): void {
     this.sensitivity = Math.min(1, Math.max(0, value));
+  }
+
+  setChop(value: number): void {
+    this.chop = Math.min(1, Math.max(0, value));
+  }
+
+  clear(): void {
+    this.grains.length = 0;
+    this.lastCaptureAt = null;
+    this.speaking = false;
+    this.speakSamples = 0;
   }
 
   consumeFootstep(): boolean {
@@ -104,9 +114,10 @@ export class VoiceSampler {
     if (this.speaking) {
       this.speakSamples += samples.length;
       const elapsed = this.speakSamples / this.sampleRate;
-      const tooLong = elapsed >= MAX_GRAIN;
+      const tooLong = elapsed >= lerp(1.12, 0.42, this.chop);
       const quiet = this.lastRms < close;
-      const midSlice = now - this.lastSliceAt >= SLICE_WHILE_OPEN && elapsed >= MIN_GRAIN;
+      const midSlice =
+        now - this.lastSliceAt >= lerp(1.02, 0.3, this.chop) && elapsed >= MIN_GRAIN;
       if (quiet || tooLong || midSlice) {
         const grain = this.commit(now);
         if (midSlice && !quiet) {
@@ -148,7 +159,7 @@ export class VoiceSampler {
       duration,
       rms: rms(data),
       f0: estimateF0(data, this.sampleRate),
-      looping: duration > 0.42,
+      looping: duration > lerp(0.72, 0.28, this.chop),
       createdAt: now,
     };
 

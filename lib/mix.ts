@@ -10,6 +10,7 @@ export type MixSettings = {
   drums: number;
   density: number;
   steer: number;
+  chop: number;
   tempo: TempoMode;
   bpm: number;
 };
@@ -26,6 +27,7 @@ export const MIX_DEFAULTS: MixSettings = {
   drums: 0.82,
   density: 0.5,
   steer: 0.55,
+  chop: 0.42,
   tempo: "follow",
   bpm: 96,
 };
@@ -42,6 +44,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drums: 0.95,
     density: 0.68,
     steer: 0.62,
+    chop: 0.58,
     tempo: "follow",
     bpm: 108,
   },
@@ -56,6 +59,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drums: 0.7,
     density: 0.42,
     steer: 0.5,
+    chop: 0.35,
     tempo: "follow",
     bpm: 92,
   },
@@ -70,6 +74,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drums: 0.48,
     density: 0.28,
     steer: 0.38,
+    chop: 0.22,
     tempo: "lock",
     bpm: 84,
   },
@@ -84,6 +89,7 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     drums: 0.9,
     density: 0.52,
     steer: 0.12,
+    chop: 0.48,
     tempo: "follow",
     bpm: 100,
   },
@@ -112,6 +118,7 @@ export function parseMix(raw: unknown): MixSettings {
     drums: asNumber(row.drums, MIX_DEFAULTS.drums, 0, 1),
     density: asNumber(row.density, MIX_DEFAULTS.density, 0, 1),
     steer: asNumber(row.steer, MIX_DEFAULTS.steer, 0, 1),
+    chop: asNumber(row.chop, MIX_DEFAULTS.chop, 0, 1),
     tempo: row.tempo === "lock" ? "lock" : "follow",
     bpm: asNumber(row.bpm, MIX_DEFAULTS.bpm, 70, 150),
   };
@@ -170,6 +177,7 @@ export function mixEquals(a: MixSettings, b: MixSettings): boolean {
     a.drums === b.drums &&
     a.density === b.density &&
     a.steer === b.steer &&
+    a.chop === b.chop &&
     a.tempo === b.tempo &&
     a.bpm === b.bpm
   );

@@ -31,6 +31,7 @@ const SLIDERS: Array<{
     | "drums"
     | "density"
     | "steer"
+    | "chop"
   >;
   label: string;
   max: number;
@@ -40,6 +41,7 @@ const SLIDERS: Array<{
   { key: "drums", label: "Drums", max: 1 },
   { key: "density", label: "Busy", max: 1 },
   { key: "steer", label: "Steer", max: 1 },
+  { key: "chop", label: "Chop", max: 1 },
   { key: "sensitivity", label: "Catch hums", max: 1 },
   { key: "echo", label: "Echo", max: 1 },
   { key: "brightness", label: "Brightness", max: 1 },
@@ -63,7 +65,7 @@ export function MixPanel({
         <button
           type="button"
           onClick={() => onOpenChange(!open)}
-          className="pointer-events-auto min-h-11 rounded-full border border-[#f4efe6]/15 bg-[#0b0907]/75 px-5 font-mono text-[12px] tracking-[0.16em] text-[#f4efe6]/85 uppercase backdrop-blur-sm"
+          className="pointer-events-auto min-h-11 whitespace-nowrap rounded-full border border-[#f4efe6]/15 bg-[#0b0907]/75 px-5 font-mono text-[12px] tracking-[0.16em] text-[#f4efe6]/85 uppercase backdrop-blur-sm"
           aria-expanded={open}
         >
           {open ? "Close mix" : `Mix · ${mixChipLabel(mix)}`}
