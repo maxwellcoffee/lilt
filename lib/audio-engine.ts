@@ -39,7 +39,10 @@ export class LiltEngine {
   private padGain!: GainNode;
   private padFilter!: BiquadFilterNode;
   private sampler: VoiceSampler | null = null;
-  private loopSources = new Map<AudioBuffer, AudioBufferSourceNode>();
+  private loopSources = new Map<
+    AudioBuffer,
+    { source: AudioBufferSourceNode; gain: GainNode }
+  >();
   private timer: number | null = null;
   private nextNoteTime = 0;
   private step16 = 0;
@@ -167,6 +170,12 @@ export class LiltEngine {
     if (ctx && this.filter) {
       this.filter.Q.setTargetAtTime(this.biteQ(), ctx.currentTime, 0.08);
     }
+    if (ctx) {
+      const level = this.loopLevel();
+      this.loopSources.forEach((node) => {
+        node.gain.gain.setTargetAtTime(level, ctx.currentTime, 0.08);
+      });
+    }
     if (mix.tempo === "lock") {
       this.targetBpm = clamp(mix.bpm, 70, 150);
     }
@@ -175,7 +184,7 @@ export class LiltEngine {
   clearGrains(): void {
     this.loopSources.forEach((node) => {
       try {
-        node.stop();
+        node.source.stop();
       } catch {
         // already stopped
       }
@@ -308,7 +317,7 @@ export class LiltEngine {
     }
     this.loopSources.forEach((node) => {
       try {
-        node.stop();
+        node.source.stop();
       } catch {
         // already stopped
       }
@@ -462,7 +471,7 @@ export class LiltEngine {
     const existing = this.loopSources.get(grain.buffer);
     if (existing) {
       try {
-        existing.stop();
+        existing.source.stop();
       } catch {
         // already stopped
       }
@@ -473,7 +482,7 @@ export class LiltEngine {
     source.playbackRate.value = this.grainRate(grain);
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.4);
+    gain.gain.linearRampToValueAtTime(this.loopLevel(), ctx.currentTime + 0.4);
     const filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.value = 900;
@@ -482,13 +491,13 @@ export class LiltEngine {
     filter.connect(gain);
     gain.connect(this.filter);
     source.start();
-    this.loopSources.set(grain.buffer, source);
+    this.loopSources.set(grain.buffer, { source, gain });
     if (this.loopSources.size > 2) {
       const oldest = this.loopSources.keys().next().value;
       if (oldest) {
         const node = this.loopSources.get(oldest);
         try {
-          node?.stop();
+          node?.source.stop();
         } catch {
           // already stopped
         }
@@ -818,6 +827,10 @@ export class LiltEngine {
 
   private biteQ(): number {
     return lerp(0.25, 4.2, clamp(this.mix.bite, 0, 1));
+  }
+
+  private loopLevel(): number {
+    return lerp(0.02, 0.42, clamp(this.mix.loop, 0, 1));
   }
 
   private grainRate(grain: CapturedGrain): number {
