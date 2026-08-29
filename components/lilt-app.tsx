@@ -64,11 +64,13 @@ export function LiltApp() {
     writeMix(next);
     engineRef.current?.setMix(next);
     motionRef.current?.setBounce(next.bounce);
+    motionRef.current?.setHang(next.hang);
   }, []);
 
   useEffect(() => {
     engineRef.current?.setMix(mix);
     motionRef.current?.setBounce(mix.bounce);
+    motionRef.current?.setHang(mix.hang);
   }, [mix]);
 
   useEffect(() => {
@@ -147,6 +149,7 @@ export function LiltApp() {
     engineRef.current = engine;
     engine.setMix(getLiveMix());
     motion.setBounce(getLiveMix().bounce);
+    motion.setHang(getLiveMix().hang);
     engine.setStepListener((intensity) => motion.registerStep(intensity));
 
     if (cam) {
@@ -437,7 +440,7 @@ function PlayingHud({
               color: `rgba(244, 239, 230, ${0.5 + (snapshot?.clickFlash ?? 0) * 0.5})`,
             }}
           >
-            {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "–"}
+            {snapshot ? `${Math.round(snapshot.bpm)} bpm` : "\u2013"}
           </span>
           <span
             className="mt-0.5 block text-[10px] tracking-[0.14em] uppercase"
@@ -448,7 +451,7 @@ function PlayingHud({
             }}
           >
             {tempo === "lock" ? `locked ${Math.round(lockBpm)}` : "follows you"}
-            {snapshot?.keyLabel ? ` · ${snapshot.keyLabel}` : ""}
+            {snapshot?.keyLabel ? ` \u00b7 ${snapshot.keyLabel}` : ""}
           </span>
         </p>
         <p className="mt-2 flex justify-end gap-1.5" aria-label="Captured samples">
