@@ -14,7 +14,7 @@ export type MixSettings = {
   bpm: number;
 };
 
-export type MixPresetId = "street" | "room" | "soft";
+export type MixPresetId = "street" | "room" | "soft" | "pocket";
 
 export const MIX_DEFAULTS: MixSettings = {
   volume: 0.85,
@@ -72,6 +72,20 @@ export const MIX_PRESETS: Record<MixPresetId, MixSettings> = {
     steer: 0.38,
     tempo: "lock",
     bpm: 84,
+  },
+  pocket: {
+    ...MIX_DEFAULTS,
+    volume: 0.88,
+    voice: 0.62,
+    sensitivity: 0.86,
+    echo: 0.26,
+    brightness: 0.48,
+    swing: 0.1,
+    drums: 0.9,
+    density: 0.52,
+    steer: 0.12,
+    tempo: "follow",
+    bpm: 100,
   },
 };
 
