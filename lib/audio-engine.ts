@@ -731,7 +731,8 @@ export class LiltEngine {
     const hz = yaw < 0 ? 148 : 220;
     osc.frequency.setValueAtTime(hz, time);
     osc.frequency.exponentialRampToValueAtTime(hz * 0.55, time + 0.18);
-    amp.gain.setValueAtTime(this.drumLevel(0.28), time);
+    const gain = this.drumLevel(0.28) * lerp(0.08, 1.12, clamp(this.mix.tom, 0, 1));
+    amp.gain.setValueAtTime(gain, time);
     amp.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
     osc.connect(amp);
     amp.connect(this.filter);
