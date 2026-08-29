@@ -45,6 +45,8 @@ export type EngineSnapshot = {
   waveform: Float32Array;
   brightness: number;
   drums: number;
+  space: number;
+  keyLabel: string;
   ready: boolean;
 };
 
