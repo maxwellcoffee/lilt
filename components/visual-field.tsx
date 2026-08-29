@@ -79,6 +79,7 @@ export function VisualField({ snapshotRef, video, hasCamera }: VisualFieldProps)
       }
 
       const warm = state?.brightness ?? 0.55;
+      const space = state?.space ?? 0.28;
       const sky = ctx.createLinearGradient(0, 0, 0, height);
       sky.addColorStop(0, `rgb(${16 + warm * 22}, ${12 + warm * 6}, ${20 - warm * 6})`);
       sky.addColorStop(0.42, `rgb(${24 + warm * 18}, ${16 + warm * 8}, ${14})`);
@@ -102,6 +103,22 @@ export function VisualField({ snapshotRef, video, hasCamera }: VisualFieldProps)
       gradient.addColorStop(1, "rgba(11, 9, 7, 0)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
+
+      if (space > 0.04) {
+        const haze = ctx.createRadialGradient(
+          width * 0.5,
+          height * 0.42,
+          20,
+          width * 0.5,
+          height * 0.5,
+          Math.max(width, height) * 0.62,
+        );
+        haze.addColorStop(0, `rgba(180, 196, 210, ${space * 0.16})`);
+        haze.addColorStop(0.55, `rgba(126, 160, 176, ${space * 0.1})`);
+        haze.addColorStop(1, "rgba(11, 9, 7, 0)");
+        ctx.fillStyle = haze;
+        ctx.fillRect(0, 0, width, height);
+      }
 
       ctx.save();
       ctx.translate(width / 2, height / 2);
