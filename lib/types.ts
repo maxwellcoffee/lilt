@@ -47,6 +47,7 @@ export type EngineSnapshot = {
   drums: number;
   space: number;
   keyLabel: string;
+  keyTint: { r: number; g: number; b: number };
   ready: boolean;
 };
 
